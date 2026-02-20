@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePlayer } from '../lib/PlayerContext';
 import { useGame } from '../lib/GameContext';
 import { Icon } from '../components/Icon';
+import { RulesModal } from '../components/RulesModal';
 import { api } from '../lib/api';
 
 const EXPANSIONS = [
@@ -21,6 +22,7 @@ export default function CreateGame() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(player.photo_url);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showRules, setShowRules] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const toggleExpansion = (key: string) => {
@@ -76,9 +78,12 @@ export default function CreateGame() {
   return (
     <div className="min-h-screen pp-shell p-6">
       <div className="max-w-md mx-auto space-y-6 pp-panel">
-        <button onClick={() => navigate('/')} className="text-pp-text-muted hover:text-pp-text transition-colors">
-          ← Back
-        </button>
+        <div className="flex items-center justify-between">
+          <button onClick={() => navigate('/')} className="text-pp-text-muted hover:text-pp-text transition-colors">
+            ← Back
+          </button>
+          <button onClick={() => setShowRules(true)} className="text-sm text-pp-text-muted hover:text-pp-text transition-colors underline" aria-label="Show rules">Rules</button>
+        </div>
 
         <h1 className="text-2xl font-bold text-pp-text pp-title">Create Game</h1>
 
@@ -153,6 +158,8 @@ export default function CreateGame() {
           {loading ? 'Creating...' : 'Create Game'}
         </button>
       </div>
+
+      <RulesModal isOpen={showRules} onClose={() => setShowRules(false)} />
     </div>
   );
 }

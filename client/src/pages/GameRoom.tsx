@@ -6,6 +6,7 @@ import { useGame } from '../lib/GameContext';
 import PlayerList from '../components/PlayerList';
 import CardDisplay from '../components/CardDisplay';
 import KickVoteModal from '../components/KickVoteModal';
+import { RulesModal } from '../components/RulesModal';
 import { Icon } from '../components/Icon';
 
 export default function GameRoom() {
@@ -15,6 +16,7 @@ export default function GameRoom() {
   const { player } = usePlayer();
   const { game, setGame, resetGame } = useGame();
   const [showKickVote, setShowKickVote] = useState(false);
+  const [showRules, setShowRules] = useState(false);
 
   const isMyTurn = game.current_turn_player_id === player.player_id;
   const isHost = game.host_player_id === player.player_id;
@@ -230,9 +232,12 @@ export default function GameRoom() {
             {game.room_code}
           </button>
         </div>
-        <button id="btn-leave" onClick={handleLeave} className="text-sm text-pp-red hover:text-pp-red-dark transition-colors" aria-label="Leave room">
-          Leave
-        </button>
+        <div className="flex items-center gap-4">
+          <button id="btn-rules" onClick={() => setShowRules(true)} className="text-sm text-pp-text-muted hover:text-pp-text transition-colors underline" aria-label="Show rules">Rules</button>
+          <button id="btn-leave" onClick={handleLeave} className="text-sm text-pp-red hover:text-pp-red-dark transition-colors" aria-label="Leave room">
+            Leave
+          </button>
+        </div>
       </header>
 
       {/* Main Content */}
@@ -367,6 +372,9 @@ export default function GameRoom() {
           onClose={() => setShowKickVote(false)}
         />
       )}
+
+      {/* Rules Modal */}
+      <RulesModal isOpen={showRules} onClose={() => setShowRules(false)} />
     </div>
   );
 }

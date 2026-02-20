@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlayer } from '../lib/PlayerContext';
 import { api } from '../lib/api';
+import { RulesModal } from '../components/RulesModal';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function Profile() {
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showRules, setShowRules] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -54,9 +56,12 @@ export default function Profile() {
   return (
     <div id="profile-page" className="min-h-screen pp-shell p-6">
       <div id="profile-container" className="max-w-md mx-auto space-y-6 pp-panel">
-        <button id="btn-back" onClick={() => navigate('/')} className="text-pp-text-muted hover:text-pp-text transition-colors">
-          ← Back
-        </button>
+        <div className="flex items-center justify-between">
+          <button id="btn-back" onClick={() => navigate('/')} className="text-pp-text-muted hover:text-pp-text transition-colors">
+            ← Back
+          </button>
+          <button id="btn-rules" onClick={() => setShowRules(true)} className="text-sm text-pp-text-muted hover:text-pp-text transition-colors underline" aria-label="Show rules">Rules</button>
+        </div>
 
         <h1 id="profile-title" className="text-2xl font-bold text-pp-text pp-title">Your Profile</h1>
 
@@ -121,6 +126,8 @@ export default function Profile() {
           )}
         </div>
       </div>
+
+      <RulesModal isOpen={showRules} onClose={() => setShowRules(false)} />
     </div>
   );
 }
