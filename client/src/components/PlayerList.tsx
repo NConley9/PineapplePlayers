@@ -11,16 +11,26 @@ interface PlayerListProps {
   players: Player[];
   currentPlayerId: string;
   currentTurnPlayerId: string | null;
+  turnOrder?: string[];
   onKick?: (playerId: string) => void;
 }
 
-export default function PlayerList({ players, currentPlayerId, currentTurnPlayerId, onKick }: PlayerListProps) {
+export default function PlayerList({ players, currentPlayerId, currentTurnPlayerId, turnOrder = [], onKick }: PlayerListProps) {
+  const orderedPlayers = turnOrder.length
+    ? [...players].sort((a, b) => turnOrder.indexOf(a.player_id) - turnOrder.indexOf(b.player_id))
+    : players;
+  const currentIndex = currentTurnPlayerId ? turnOrder.indexOf(currentTurnPlayerId) : -1;
+  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % turnOrder.length : -1;
+  const nextPlayerId = nextIndex >= 0 ? turnOrder[nextIndex] : null;
+
   return (
     <div className="border-t border-pp-purple/20 bg-pp-bg-light/70 backdrop-blur p-3">
       <div className="flex gap-3 overflow-x-auto pb-1">
-        {players.map(p => {
+        {orderedPlayers.map(p => {
           const isMe = p.player_id === currentPlayerId;
           const isActive = p.player_id === currentTurnPlayerId;
+          const isNext = p.player_id === nextPlayerId;
+          const orderIndex = turnOrder.indexOf(p.player_id);
           return (
             <div key={p.player_id} className="flex flex-col items-center min-w-[60px] relative group pt-1" id={`player-item-${p.player_id}`}>
               <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold overflow-hidden
@@ -33,9 +43,18 @@ export default function PlayerList({ players, currentPlayerId, currentTurnPlayer
                   <span className="text-pp-text">{p.display_name[0]?.toUpperCase()}</span>
                 )}
               </div>
+              {orderIndex >= 0 && (
+                <span className="mt-1 text-[10px] text-pp-text-muted">#{orderIndex + 1}</span>
+              )}
               <span className={`text-xs mt-1 truncate max-w-[60px] ${isMe ? 'text-pp-purple' : 'text-pp-text-muted'}`}>
                 {isMe ? 'You' : p.display_name}
               </span>
+              {isActive && (
+                <span className="mt-1 text-[10px] font-semibold text-pp-gold">Now</span>
+              )}
+              {!isActive && isNext && (
+                <span className="mt-1 text-[10px] font-semibold text-pp-text">Next</span>
+              )}
               {/* Kick button */}
               {onKick && !isMe && (
                 <button

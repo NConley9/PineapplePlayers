@@ -17,6 +17,7 @@ export default function GameRoom() {
   const { game, setGame, resetGame } = useGame();
   const [showKickVote, setShowKickVote] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [passNotice, setPassNotice] = useState<string | null>(null);
 
   const isMyTurn = game.current_turn_player_id === player.player_id;
   const isHost = game.host_player_id === player.player_id;
@@ -94,6 +95,11 @@ export default function GameRoom() {
 
     const onTurnEnded = (data: any) => {
       setGame({ turn_outcome: data.outcome });
+      if (data.outcome === 'passed') {
+        const passer = game.players.find((p: any) => p.player_id === data.player_id);
+        setPassNotice(`${passer?.display_name || 'A player'} passed their turn.`);
+        setTimeout(() => setPassNotice(null), 3500);
+      }
     };
 
     const onKickVoteInitiated = (data: any) => {
@@ -240,6 +246,12 @@ export default function GameRoom() {
         </div>
       </header>
 
+      {passNotice && (
+        <div className="mx-4 mt-3 rounded-xl border border-pp-yellow/40 bg-pp-yellow/10 px-4 py-2 text-sm text-pp-text">
+          {passNotice}
+        </div>
+      )}
+
       {/* Main Content */}
       <main id="main-game-content" className="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 overflow-y-auto">
         {/* LOBBY */}
@@ -360,6 +372,7 @@ export default function GameRoom() {
         players={game.players.filter((p: any) => p.is_active && !p.is_kicked)}
         currentPlayerId={player.player_id}
         currentTurnPlayerId={game.current_turn_player_id}
+        turnOrder={game.turn_order}
         onKick={game.status === 'in_progress' ? handleKick : undefined}
       />
 
