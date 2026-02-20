@@ -1,4 +1,4 @@
-import { getDb } from './database';
+import { query } from './database';
 
 interface CardSeed {
   card_type: string;
@@ -93,37 +93,38 @@ const cards: CardSeed[] = [
   { card_type: 'group', card_text: 'Every player whispers one word to describe the person on their left — something you\'d say in the bedroom.', expansion: 'pineapple' },
 ];
 
-function seed(): void {
-  const db = getDb();
-
-  // Check if cards already exist
-  const count = db.prepare('SELECT COUNT(*) as count FROM cards').get() as { count: number };
-  if (count.count > 0) {
-    console.log(`Database already has ${count.count} cards. Skipping seed.`);
-    console.log('To re-seed, delete pineapple.db and run again.');
-    return;
-  }
-
-  const insert = db.prepare(
-    'INSERT INTO cards (card_type, card_text, expansion) VALUES (?, ?, ?)'
-  );
-
-  const insertMany = db.transaction((cards: CardSeed[]) => {
-    for (const card of cards) {
-      insert.run(card.card_type, card.card_text, card.expansion);
+async function seed(): Promise<void> {
+  try {
+    // Check if cards already exist
+    const result = await query('SELECT COUNT(*) as count FROM cards');
+    const count = parseInt(result.rows[0].count, 10);
+    
+    if (count > 0) {
+      console.log(`✅ Database already has ${count} cards. Skipping seed.`);
+      return;
     }
-  });
 
-  insertMany(cards);
+    // Insert cards
+    for (const card of cards) {
+      await query(
+        'INSERT INTO cards (card_type, card_text, expansion) VALUES ($1, $2, $3)',
+        [card.card_type, card.card_text, card.expansion]
+      );
+    }
 
-  // Report
-  const stats = db.prepare(
-    'SELECT expansion, card_type, COUNT(*) as count FROM cards GROUP BY expansion, card_type ORDER BY expansion, card_type'
-  ).all() as { expansion: string; card_type: string; count: number }[];
+    // Report
+    const statsResult = await query(
+      `SELECT expansion, card_type, COUNT(*) as count FROM cards 
+       GROUP BY expansion, card_type ORDER BY expansion, card_type`
+    );
 
-  console.log(`Seeded ${cards.length} cards:`);
-  for (const row of stats) {
-    console.log(`  ${row.expansion} / ${row.card_type}: ${row.count}`);
+    console.log(`✅ Seeded ${cards.length} cards:`);
+    for (const row of statsResult.rows) {
+      console.log(`  ${row.expansion} / ${row.card_type}: ${row.count}`);
+    }
+  } catch (error) {
+    console.error('❌ Error seeding database:', error);
+    throw error;
   }
 }
 

@@ -34,18 +34,18 @@ export function registerSocketHandlers(
     console.log(`Socket connected: ${socket.id}`);
 
     // ---- Join Room ----
-    socket.on('join_room', async (data) => {
+    socket.on('join_room', async (data: any) => {
       try {
-        const room = findRoomByCode(data.room_code.toUpperCase());
+        const room = await findRoomByCode(data.room_code.toUpperCase());
         if (!room) {
           socket.emit('error', { message: 'Room not found' });
           return;
         }
 
         // Ensure player exists
-        createOrGetPlayer(data.player_id, data.display_name, data.photo_url);
+        await createOrGetPlayer(data.player_id, data.display_name, data.photo_url);
 
-        const result = addPlayerToRoom(room.room_id, data.player_id, data.display_name, data.photo_url);
+        const result = await addPlayerToRoom(room.room_id, data.player_id, data.display_name, data.photo_url);
         if ('error' in result) {
           socket.emit('error', { message: result.error });
           return;
@@ -59,7 +59,7 @@ export function registerSocketHandlers(
         io.to(room.room_id).emit('player_joined', result);
 
         // Send full state to joining player
-        const state = getRoomState(room.room_id);
+        const state = await getRoomState(room.room_id);
         if (state) {
           socket.emit('room_state', state);
         }
@@ -80,15 +80,15 @@ export function registerSocketHandlers(
     });
 
     // ---- Start Game ----
-    socket.on('start_game', (data) => {
+    socket.on('start_game', async (data: any) => {
       try {
-        const result = startGame(data.room_id, data.player_id);
+        const result = await startGame(data.room_id, data.player_id);
         if (!result.success) {
           socket.emit('error', { message: result.error || 'Cannot start game' });
           return;
         }
 
-        const room = getRoom(data.room_id);
+        const room = await getRoom(data.room_id);
         if (!room) return;
 
         io.to(data.room_id).emit('game_started', {
@@ -107,15 +107,15 @@ export function registerSocketHandlers(
     });
 
     // ---- Draw Cards ----
-    socket.on('draw_cards', (data) => {
+    socket.on('draw_cards', async (data: any) => {
       try {
-        const room = getRoom(data.room_id);
+        const room = await getRoom(data.room_id);
         if (!room || room.current_turn_player_id !== data.player_id) {
           socket.emit('error', { message: 'Not your turn' });
           return;
         }
 
-        const cards = drawCards(data.room_id, 2);
+        const cards = await drawCards(data.room_id, 2);
         if (cards.length < 2) {
           socket.emit('error', { message: 'Not enough cards in deck' });
           return;
@@ -133,9 +133,9 @@ export function registerSocketHandlers(
     });
 
     // ---- Select Card ----
-    socket.on('select_card', (data) => {
+    socket.on('select_card', async (data: any) => {
       try {
-        const room = getRoom(data.room_id);
+        const room = await getRoom(data.room_id);
         if (!room || room.current_turn_player_id !== data.player_id) {
           socket.emit('error', { message: 'Not your turn' });
           return;
@@ -156,11 +156,11 @@ export function registerSocketHandlers(
         state.selected = data.card_id;
 
         // Discard both cards
-        discardCard(data.room_id, state.card1);
-        discardCard(data.room_id, state.card2);
+        await discardCard(data.room_id, state.card1);
+        await discardCard(data.room_id, state.card2);
 
         // Broadcast selected card to all players
-        const card = getCardById(data.card_id);
+        const card = await getCardById(data.card_id);
         if (card) {
           io.to(data.room_id).emit('card_selected', { player_id: data.player_id, card });
         }
@@ -171,9 +171,9 @@ export function registerSocketHandlers(
     });
 
     // ---- Complete Turn (Completed/Pass) ----
-    socket.on('complete_turn', (data) => {
+    socket.on('complete_turn', async (data: any) => {
       try {
-        const room = getRoom(data.room_id);
+        const room = await getRoom(data.room_id);
         if (!room || room.current_turn_player_id !== data.player_id) {
           socket.emit('error', { message: 'Not your turn' });
           return;
@@ -188,7 +188,7 @@ export function registerSocketHandlers(
         state.outcome = data.outcome;
 
         // Log the turn
-        logTurn(
+        await logTurn(
           data.room_id,
           data.player_id,
           state.card1,
@@ -198,7 +198,7 @@ export function registerSocketHandlers(
           room.turn_number || 1
         );
 
-        const card = getCardById(state.selected);
+        const card = await getCardById(state.selected);
         io.to(data.room_id).emit('turn_ended', {
           player_id: data.player_id,
           outcome: data.outcome,
@@ -211,9 +211,9 @@ export function registerSocketHandlers(
     });
 
     // ---- End Turn (advance to next player) ----
-    socket.on('end_turn', (data) => {
+    socket.on('end_turn', async (data: any) => {
       try {
-        const room = getRoom(data.room_id);
+        const room = await getRoom(data.room_id);
         if (!room || room.current_turn_player_id !== data.player_id) {
           socket.emit('error', { message: 'Not your turn' });
           return;
@@ -222,7 +222,7 @@ export function registerSocketHandlers(
         // Clean up turn state
         turnState.delete(data.room_id);
 
-        const { nextPlayerId, turnNumber } = advanceTurn(data.room_id);
+        const { nextPlayerId, turnNumber } = await advanceTurn(data.room_id);
         if (nextPlayerId) {
           io.to(data.room_id).emit('turn_started', {
             player_id: nextPlayerId,
@@ -236,9 +236,9 @@ export function registerSocketHandlers(
     });
 
     // ---- Kick Vote ----
-    socket.on('initiate_kick', (data) => {
+    socket.on('initiate_kick', async (data: any) => {
       try {
-        const result = initiateKick(data.room_id, data.player_id, data.target_player_id);
+        const result = await initiateKick(data.room_id, data.player_id, data.target_player_id);
         if ('error' in result) {
           socket.emit('error', { message: result.error });
           return;
@@ -251,8 +251,8 @@ export function registerSocketHandlers(
         });
 
         // Set 60-second timeout
-        const timer = setTimeout(() => {
-          const resolved = resolveKickVote(result.vote_id);
+        const timer = setTimeout(async () => {
+          const resolved = await resolveKickVote(result.vote_id);
           io.to(data.room_id).emit('kick_vote_resolved', {
             vote_id: result.vote_id,
             target_player_id: data.target_player_id,
@@ -260,7 +260,7 @@ export function registerSocketHandlers(
           });
 
           if (resolved.result === 'kicked') {
-            handleKickedPlayer(io, data.room_id, data.target_player_id);
+            await handleKickedPlayer(io, data.room_id, data.target_player_id);
           }
           kickTimers.delete(result.vote_id);
         }, 60000);
@@ -272,13 +272,14 @@ export function registerSocketHandlers(
       }
     });
 
-    socket.on('cast_kick_vote', (data) => {
+    socket.on('cast_kick_vote', async (data: any) => {
       try {
-        const result = castKickVote(data.vote_id, data.player_id, data.vote);
+        const result = await castKickVote(data.vote_id, data.player_id, data.vote);
 
         // Broadcast updated tallies
-        const { getDb } = require('../db/database');
-        const kv = getDb().prepare('SELECT * FROM kick_votes WHERE vote_id = ?').get(data.vote_id) as any;
+        const { query } = require('../db/database');
+        const kvResult = await query('SELECT * FROM kick_votes WHERE vote_id = $1', [data.vote_id]);
+        const kv = kvResult.rows[0];
         if (kv) {
           io.to(data.room_id).emit('kick_vote_update', {
             vote_id: data.vote_id,
@@ -302,7 +303,7 @@ export function registerSocketHandlers(
           });
 
           if (result.result === 'kicked') {
-            handleKickedPlayer(io, data.room_id, kv.target_player_id);
+            await handleKickedPlayer(io, data.room_id, kv.target_player_id);
           }
         }
       } catch (err) {
@@ -312,15 +313,15 @@ export function registerSocketHandlers(
     });
 
     // ---- Update Expansions ----
-    socket.on('update_expansions', (data) => {
+    socket.on('update_expansions', async (data: any) => {
       try {
-        const success = updateExpansions(data.room_id, data.player_id, data.expansions);
+        const success = await updateExpansions(data.room_id, data.player_id, data.expansions);
         if (!success) {
           socket.emit('error', { message: 'Only the host can change expansions in the lobby' });
           return;
         }
         // Broadcast updated state
-        const state = getRoomState(data.room_id);
+        const state = await getRoomState(data.room_id);
         if (state) {
           io.to(data.room_id).emit('room_state', state);
         }
@@ -330,10 +331,10 @@ export function registerSocketHandlers(
     });
 
     // ---- Disconnect ----
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
       const mapping = socketRoomMap.get(socket.id);
       if (mapping) {
-        handlePlayerLeave(io, socket, mapping.room_id, mapping.player_id);
+        await handlePlayerLeave(io, socket, mapping.room_id, mapping.player_id);
         socketRoomMap.delete(socket.id);
       }
       console.log(`Socket disconnected: ${socket.id}`);
@@ -346,51 +347,53 @@ function handlePlayerLeave(
   socket: Socket,
   roomId: string,
   playerId: string
-): void {
-  try {
-    const room = getRoom(roomId);
-    const wasCurrentTurn = room?.current_turn_player_id === playerId;
+): Promise<void> {
+  return (async () => {
+    try {
+      const room = await getRoom(roomId);
+      const wasCurrentTurn = room?.current_turn_player_id === playerId;
 
-    const { gameEnded } = removePlayerFromRoom(roomId, playerId);
+      const { gameEnded } = await removePlayerFromRoom(roomId, playerId);
 
-    socket.leave(roomId);
-    io.to(roomId).emit('player_left', { player_id: playerId });
+      socket.leave(roomId);
+      io.to(roomId).emit('player_left', { player_id: playerId });
 
-    if (gameEnded) {
-      io.to(roomId).emit('game_ended');
-      return;
-    }
-
-    // If it was their turn, auto-advance
-    if (wasCurrentTurn && room) {
-      const state = turnState.get(roomId);
-      if (state && state.selected) {
-        logTurn(roomId, playerId, state.card1, state.card2, state.selected, 'passed', room.turn_number || 1);
+      if (gameEnded) {
+        io.to(roomId).emit('game_ended');
+        return;
       }
-      turnState.delete(roomId);
 
-      const { nextPlayerId, turnNumber } = advanceTurn(roomId);
-      if (nextPlayerId) {
-        io.to(roomId).emit('turn_started', {
-          player_id: nextPlayerId,
-          turn_number: turnNumber,
-        });
+      // If it was their turn, auto-advance
+      if (wasCurrentTurn && room) {
+        const state = turnState.get(roomId);
+        if (state && state.selected) {
+          await logTurn(roomId, playerId, state.card1, state.card2, state.selected, 'passed', room.turn_number || 1);
+        }
+        turnState.delete(roomId);
+
+        const { nextPlayerId, turnNumber } = await advanceTurn(roomId);
+        if (nextPlayerId) {
+          io.to(roomId).emit('turn_started', {
+            player_id: nextPlayerId,
+            turn_number: turnNumber,
+          });
+        }
       }
+    } catch (err) {
+      console.error('handlePlayerLeave error:', err);
     }
-  } catch (err) {
-    console.error('handlePlayerLeave error:', err);
-  }
+  })();
 }
 
-function handleKickedPlayer(
+async function handleKickedPlayer(
   io: Server<ClientToServerEvents, ServerToClientEvents>,
   roomId: string,
   targetPlayerId: string
-): void {
-  const room = getRoom(roomId);
+): Promise<void> {
+  const room = await getRoom(roomId);
   if (room && room.current_turn_player_id === targetPlayerId) {
     turnState.delete(roomId);
-    const { nextPlayerId, turnNumber } = advanceTurn(roomId);
+    const { nextPlayerId, turnNumber } = await advanceTurn(roomId);
     if (nextPlayerId) {
       io.to(roomId).emit('turn_started', {
         player_id: nextPlayerId,
