@@ -38,57 +38,57 @@ export default function Home() {
       </header>
 
       {/* Main Grid */}
-      <main id="main-content" className="flex-1 flex flex-col items-center justify-center p-6 gap-6">
+      <main id="main-content" className="flex-1 flex flex-col items-center justify-center p-4 gap-4 sm:gap-6">
         {/* Full Logo */}
-        <div id="home-logo" className="w-32 h-32 pp-animate-float">
+        <div id="home-logo" className="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 pp-animate-float">
           <img src={logoImg} alt="" className="w-full h-full object-contain" />
         </div>
 
-        <div id="tiles-grid" className="pp-layout-two-col w-full max-w-sm lg:max-w-2xl">
+        <div id="tiles-grid" className="grid grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 w-full max-w-md lg:max-w-2xl">
           <Link
             id="tile-join"
             to="/join"
-            className="aspect-square pp-tile pp-animate-rise"
+            className="aspect-square pp-tile pp-animate-rise flex flex-col items-center justify-center gap-2"
             style={{ animationDelay: '0.05s' }}
           >
             <Icon name="door" size="xl" ariaLabel="Join Room" />
-            <span className="font-bold text-pp-text">Join Room</span>
+            <span className="font-bold text-pp-text text-xs sm:text-sm">Join Room</span>
           </Link>
 
           <Link
             id="tile-create"
             to="/create"
-            className="aspect-square pp-tile pp-animate-rise"
+            className="aspect-square pp-tile pp-animate-rise flex flex-col items-center justify-center gap-2"
             style={{ animationDelay: '0.1s' }}
           >
             <Icon name="plus" size="xl" ariaLabel="Create Game" />
-            <span className="font-bold text-pp-text">Create Game</span>
+            <span className="font-bold text-pp-text text-xs sm:text-sm">Create Game</span>
           </Link>
 
           <Link
             id="tile-profile"
             to="/profile"
-            className="aspect-square pp-tile pp-animate-rise"
+            className="aspect-square pp-tile pp-animate-rise flex flex-col items-center justify-center gap-2"
             style={{ animationDelay: '0.15s' }}
           >
             <Icon name="home" size="xl" ariaLabel="Profile" />
-            <span className="font-bold text-pp-text">Profile</span>
+            <span className="font-bold text-pp-text text-xs sm:text-sm">Profile</span>
           </Link>
 
           <Link
             id="tile-suggest"
             to="/suggest"
-            className="aspect-square pp-tile pp-animate-rise"
+            className="aspect-square pp-tile pp-animate-rise flex flex-col items-center justify-center gap-2"
             style={{ animationDelay: '0.2s' }}
           >
             <Icon name="card" size="xl" ariaLabel="Suggest a Card" />
-            <span className="font-bold text-pp-text">Suggest a Card</span>
+            <span className="font-bold text-pp-text text-xs sm:text-sm">Suggest a Card</span>
           </Link>
 
           <Link
             id="tile-analytics"
             to="/admin/analytics"
-            className="col-span-2 rounded-2xl border border-pp-purple/30 bg-pp-surface/40 px-4 py-3 flex items-center justify-center gap-2 hover:border-pp-gold/60 transition-colors pp-animate-rise"
+            className="col-span-2 rounded-2xl border border-pp-purple/30 bg-pp-surface/40 px-4 py-3 flex items-center justify-center gap-2 hover:border-pp-gold/60 transition-colors pp-animate-rise text-xs sm:text-sm"
             style={{ animationDelay: '0.25s' }}
           >
             <Icon name="bar-chart" size="md" />
@@ -98,7 +98,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer id="footer" className="p-4 text-center text-pp-text-muted text-xs flex gap-4 justify-center items-center">
+      <footer id="footer" className="p-3 sm:p-4 text-center text-pp-text-muted text-xs flex gap-4 justify-center items-center flex-shrink-0">
         <button id="btn-rules" onClick={() => setShowRules(true)} className="text-pp-text-muted hover:text-pp-text transition-colors underline">Rules</button>
         <span>Pineapple Players &copy; {new Date().getFullYear()}</span>
       </footer>

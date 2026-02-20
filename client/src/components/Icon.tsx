@@ -3,7 +3,7 @@ import logoImg from '../assets/logo.png';
 import iconImg from '../assets/icon.png';
 
 export interface IconProps {
-  name: 'pineapple' | 'icon' | 'gamepad' | 'users' | 'card' | 'bar-chart' | 'settings' | 'plus' | 'trash' | 'edit' | 'download' | 'upload' | 'check' | 'x' | 'play' | 'crown' | 'help' | 'skip' | 'home' | 'logout' | 'door';
+  name: 'pineapple' | 'icon' | 'gamepad' | 'users' | 'card' | 'bar-chart' | 'settings' | 'plus' | 'trash' | 'edit' | 'download' | 'upload' | 'check' | 'x' | 'play' | 'crown' | 'help' | 'skip' | 'home' | 'logout' | 'door' | 'lock';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   ariaLabel?: string;
@@ -139,6 +139,12 @@ const icons = {
       <path d="M3 9h18v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z" />
       <path d="M9 11h6v8" />
       <circle cx="15" cy="15" r="1" fill="currentColor" />
+    </svg>
+  ),
+  lock: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
   ),
 };

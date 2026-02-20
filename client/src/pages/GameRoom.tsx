@@ -217,7 +217,7 @@ export default function GameRoom() {
   }
 
   return (
-    <div id="game-room-page" className="min-h-screen pp-shell flex flex-col">
+    <div id="game-room-page" className="h-screen pp-shell flex flex-col overflow-hidden">
       {/* Header */}
       <header id="game-header" className="mx-4 mt-4 rounded-2xl px-4 py-3 border border-pp-purple/20 bg-pp-surface/40 backdrop-blur flex items-center justify-between overflow-visible">
         <div className="flex items-center gap-2">
@@ -241,7 +241,7 @@ export default function GameRoom() {
       </header>
 
       {/* Main Content */}
-      <main id="main-game-content" className="flex-1 flex flex-col items-center justify-center p-6">
+      <main id="main-game-content" className="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 overflow-y-auto">
         {/* LOBBY */}
         {game.status === 'lobby' && (
           <div id="lobby-panel" className="w-full max-w-md space-y-6 text-center pp-panel">
@@ -265,12 +265,12 @@ export default function GameRoom() {
 
         {/* IN GAME */}
         {game.status === 'in_progress' && (
-          <div id="game-container" className="w-full flex justify-center px-4">
-            <div className="w-full max-w-6xl space-y-6">
-              {/* Mobile/Tablet: Stack layout | Large screens: 3-column layout */}
-              <div id="game-grid" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div id="game-container" className="w-full flex justify-center px-2 sm:px-4">
+            <div className="w-full max-w-6xl space-y-3 sm:space-y-6">
+              {/* Mobile: Stack layout | Tablet+: 2-column | Large screens: 3-column layout */}
+              <div id="game-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                 {/* Left panel - turn info */}
-                <div id="turn-info-panel" className="lg:col-span-1 pp-panel">
+                <div id="turn-info-panel" className="sm:col-span-1 lg:col-span-1 pp-panel py-2 sm:py-4">
                   <div className="text-center space-y-4">
                     <p className="text-sm text-pp-text-muted font-mono">Turn {game.turn_number}</p>
                     <h2 id="turn-indicator" className="text-xl font-bold text-pp-text pp-title">
@@ -281,7 +281,7 @@ export default function GameRoom() {
                 </div>
 
                 {/* Right panel - card play area */}
-                <div id="card-play-panel" className="lg:col-span-2 pp-panel">
+                <div id="card-play-panel" className="sm:col-span-1 lg:col-span-2 pp-panel py-2 sm:py-4">
                   {/* MY TURN */}
                   {isMyTurn && (
                     <div id="my-turn-section" className="space-y-6">
@@ -294,9 +294,9 @@ export default function GameRoom() {
 
                       {/* Card selection phase */}
                       {game.drawn_cards.length === 2 && !game.selected_card && (
-                        <div className="space-y-4">
-                          <p className="text-center text-pp-text-muted">Choose a card to play:</p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="space-y-3 sm:space-y-4">
+                          <p className="text-center text-pp-text-muted text-sm">Choose a card to play:</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
                             {game.drawn_cards.map((card: any, idx: number) => (
                               <CardDisplay 
                                 key={card.card_id} 

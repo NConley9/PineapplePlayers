@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { PlayerProvider, usePlayer } from './lib/PlayerContext';
 import { GameProvider } from './lib/GameContext';
 import { SocketContext, socket } from './lib/socket';
+import { AdminGate } from './components/AdminGate';
 import AgeGate from './pages/AgeGate';
 import Home from './pages/Home';
 import CreateGame from './pages/CreateGame';
@@ -29,8 +30,8 @@ function AppContent() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/suggest" element={<SuggestCard />} />
       <Route path="/history/:roomId" element={<GameDetail />} />
-      <Route path="/admin/analytics" element={<AdminAnalytics />} />
-      <Route path="/admin/cards" element={<AdminCards />} />
+      <Route path="/admin/analytics" element={<AdminGate><AdminAnalytics /></AdminGate>} />
+      <Route path="/admin/cards" element={<AdminGate><AdminCards /></AdminGate>} />
     </Routes>
   );
 }
