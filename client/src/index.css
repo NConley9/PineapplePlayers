@@ -1,0 +1,396 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* Pineapple Players Theme */
+@theme {
+  --color-pp-red: #DC2626;
+  --color-pp-red-dark: #991B1B;
+  --color-pp-purple: #7C3AED;
+  --color-pp-purple-dark: #5B21B6;
+  --color-pp-orange: #EA580C;
+  --color-pp-orange-dark: #C2410C;
+  --color-pp-gold: #F59E0B;
+  --color-pp-bg: #1A0A2E;
+  --color-pp-bg-light: #2D1B4E;
+  --color-pp-surface: #3D2B5E;
+  --color-pp-text: #F5F0FF;
+  --color-pp-text-muted: #A78BCA;
+  --font-pp-display: "Fraunces", "Times New Roman", serif;
+  --font-pp-body: "Space Grotesk", "Segoe UI", sans-serif;
+}
+
+/* Card type colors */
+.card-dare { border-color: var(--color-pp-red); }
+.card-truth { border-color: var(--color-pp-purple); }
+.card-challenge { border-color: var(--color-pp-orange); }
+.card-group { border-color: var(--color-pp-gold); }
+
+.card-dare-bg { background-color: color-mix(in srgb, var(--color-pp-red) 15%, transparent); }
+.card-truth-bg { background-color: color-mix(in srgb, var(--color-pp-purple) 15%, transparent); }
+.card-challenge-bg { background-color: color-mix(in srgb, var(--color-pp-orange) 15%, transparent); }
+.card-group-bg { background-color: color-mix(in srgb, var(--color-pp-gold) 15%, transparent); }
+
+/* Flip animation */
+.flip-card {
+  perspective: 1000px;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.flip-card-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+}
+
+/* Gradient button */
+.btn-primary {
+  @apply px-6 py-3 rounded-xl font-bold text-white
+    bg-gradient-to-r from-pp-red via-pp-purple to-pp-orange
+    shadow-lg shadow-pp-purple/20
+    hover:opacity-90 hover:shadow-pp-purple/40 transition-all
+    disabled:opacity-40 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply px-6 py-3 rounded-xl font-bold text-pp-text
+    bg-pp-surface/70 border border-pp-purple/30
+    hover:bg-pp-purple/20 hover:border-pp-purple/60 transition-all;
+}
+
+.btn-danger {
+  @apply px-4 py-2 rounded-lg font-bold text-white
+    bg-pp-red hover:bg-pp-red-dark transition-colors;
+}
+
+.btn-success {
+  @apply px-6 py-3 rounded-xl font-bold text-white
+    bg-green-600 hover:bg-green-700 transition-colors;
+}
+
+.btn-muted {
+  @apply px-6 py-3 rounded-xl font-bold text-pp-text-muted
+    bg-pp-surface/50 border border-pp-text-muted/20
+    hover:bg-pp-surface transition-colors;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-success,
+.btn-muted {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pp-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-pp-bg;
+}
+
+/* Input styles */
+.input-field {
+  @apply w-full px-4 py-3 rounded-xl bg-pp-surface border border-pp-purple/30
+    text-pp-text placeholder-pp-text-muted/60
+    focus:outline-none focus:border-pp-purple focus:ring-1 focus:ring-pp-purple
+    transition-colors;
+}
+
+/* Layout shells and panels */
+.pp-shell {
+  position: relative;
+  min-height: 100vh;
+  background: radial-gradient(1200px 600px at 10% -10%, rgba(124, 58, 237, 0.25), transparent 60%),
+    radial-gradient(900px 500px at 90% 10%, rgba(234, 88, 12, 0.2), transparent 60%),
+    radial-gradient(700px 400px at 50% 100%, rgba(220, 38, 38, 0.2), transparent 60%),
+    var(--color-pp-bg);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.pp-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.pp-panel {
+  background: rgba(45, 27, 78, 0.6);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(13, 8, 28, 0.45);
+  backdrop-filter: blur(16px);
+}
+
+.pp-title {
+  font-family: var(--font-pp-display);
+  letter-spacing: -0.01em;
+}
+
+.pp-subtitle {
+  font-family: var(--font-pp-body);
+  color: var(--color-pp-text-muted);
+}
+
+.pp-tile {
+  @apply rounded-2xl border flex flex-col items-center justify-center gap-3 transition-all;
+  background: linear-gradient(160deg, rgba(124, 58, 237, 0.25), rgba(45, 27, 78, 0.2));
+  border-color: rgba(124, 58, 237, 0.35);
+  box-shadow: 0 12px 30px rgba(14, 8, 30, 0.45);
+}
+
+.pp-tile:hover {
+  transform: translateY(-3px) scale(1.01);
+  border-color: rgba(245, 158, 11, 0.6);
+}
+
+.pp-tile:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.6);
+}
+
+/* Motion & Micro-interactions */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes cardDraw {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes cardGlow {
+  0%, 100% {
+    box-shadow: 0 12px 30px rgba(124, 58, 237, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 32px rgba(124, 58, 237, 0.6);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.pp-animate-rise {
+  animation: rise 0.6s ease forwards;
+}
+
+.pp-animate-float {
+  animation: float 3.6s ease-in-out infinite;
+}
+
+.pp-animate-card-draw {
+  animation: cardDraw 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.pp-animate-card-draw-1 { animation-delay: 0ms; }
+.pp-animate-card-draw-2 { animation-delay: 50ms; }
+.pp-animate-card-draw-3 { animation-delay: 100ms; }
+.pp-animate-card-draw-4 { animation-delay: 150ms; }
+.pp-animate-card-draw-5 { animation-delay: 200ms; }
+
+.pp-animate-glow {
+  animation: cardGlow 2s ease-in-out infinite;
+}
+
+.pp-animate-slide-left {
+  animation: slideInLeft 0.5s ease forwards;
+}
+
+.pp-animate-slide-right {
+  animation: slideInRight 0.5s ease forwards;
+}
+
+.pp-animate-fade-scale {
+  animation: fadeInScale 0.4s ease forwards;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .pp-animate-rise,
+  .pp-animate-float,
+  .pp-animate-card-draw,
+  .pp-animate-glow,
+  .pp-animate-slide-left,
+  .pp-animate-slide-right,
+  .pp-animate-fade-scale {
+    animation: none;
+    opacity: 1;
+    transform: none !important;
+  }
+}
+
+/* Card hover glow effect */
+.card-hover-glow:hover {
+  box-shadow: 0 0 24px rgba(124, 58, 237, 0.7), 0 12px 30px rgba(124, 58, 237, 0.2);
+}
+
+/* Responsive two-column layout for tablets (768px+) */
+@media (min-width: 768px) {
+  .pp-layout-two-col {
+    @apply grid grid-cols-2 gap-6;
+  }
+
+  .pp-form-group {
+    @apply col-span-1;
+  }
+
+  .pp-form-group.pp-full {
+    @apply col-span-2;
+  }
+
+  .pp-panel-large {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+}
+
+/* Large screens (1024px+) - ensure proper centering */
+@media (min-width: 1024px) {
+  main {
+    margin: 0 auto;
+    max-width: 100%;
+  }
+}
+
+/* Extra large screens (1200px+) */
+@media (min-width: 1200px) {
+  .pp-layout-three-col {
+    @apply grid grid-cols-3 gap-8;
+  }
+
+  .pp-sidebar {
+    @apply col-span-1;
+  }
+
+  .pp-content {
+    @apply col-span-2;
+  }
+}
+
+/* Galaxy Z Fold 7 & similar foldables (~1536px dual-screen inner width) */
+@media (min-width: 1536px) {
+  .pp-foldable-aware {
+    @apply grid grid-cols-1 gap-0;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+  }
+
+  .pp-foldable-left {
+    @apply col-start-1 border-r border-pp-purple/20;
+    padding-right: 20px;
+  }
+
+  .pp-foldable-right {
+    @apply col-start-2;
+    padding-left: 20px;
+  }
+
+  /* Make cards larger on foldables */
+  .pp-tile {
+    min-height: 140px;
+  }
+
+  .card-display {
+    min-height: 300px;
+  }
+}
+
+/* Landscape orientation for foldable inner screen */
+@media (orientation: landscape) and (max-height: 600px) {
+  .pp-shell {
+    min-height: auto;
+  }
+
+  .pp-panel {
+    padding: 16px;
+  }
+
+  .pp-tile {
+    min-height: 100px;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-pp-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-pp-purple);
+  border-radius: 2px;
+}
+
+body {
+  background-color: var(--color-pp-bg);
+  color: var(--color-pp-text);
+  font-family: var(--font-pp-body);
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 100%;
+}
