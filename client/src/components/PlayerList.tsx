@@ -1,4 +1,5 @@
 import { Icon } from './Icon';
+import { resolvePhotoUrl } from '../lib/photo';
 
 interface Player {
   player_id: string;
@@ -24,21 +25,27 @@ export default function PlayerList({ players, currentPlayerId, currentTurnPlayer
   const nextPlayerId = nextIndex >= 0 ? turnOrder[nextIndex] : null;
 
   return (
-    <div className="border-t border-pp-purple/20 bg-pp-bg-light/70 backdrop-blur p-3">
+    <div className="shrink-0 border-t border-pp-purple/20 bg-pp-bg-light/95 backdrop-blur p-3 shadow-[0_-8px_24px_rgba(0,0,0,0.25)]">
       <div className="flex gap-3 overflow-x-auto pb-1">
         {orderedPlayers.map(p => {
           const isMe = p.player_id === currentPlayerId;
           const isActive = p.player_id === currentTurnPlayerId;
           const isNext = p.player_id === nextPlayerId;
           const orderIndex = turnOrder.indexOf(p.player_id);
+          const isInactive = !p.is_active;
+          const photoUrl = resolvePhotoUrl(p.photo_url);
           return (
-            <div key={p.player_id} className="flex flex-col items-center min-w-[60px] relative group pt-1" id={`player-item-${p.player_id}`}>
+            <div
+              key={p.player_id}
+              className={`flex flex-col items-center min-w-[60px] relative group pt-1 ${isInactive ? 'opacity-50' : ''}`}
+              id={`player-item-${p.player_id}`}
+            >
               <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold overflow-hidden
                 ${isActive ? 'ring-2 ring-pp-gold ring-offset-2 ring-offset-pp-bg-light' : ''}
                 ${isMe ? 'bg-pp-purple/30 border-pp-purple' : 'bg-pp-surface'} border border-pp-purple/30
               `}>
-                {p.photo_url ? (
-                  <img src={p.photo_url} alt="" className="w-full h-full object-cover" />
+                {photoUrl ? (
+                  <img src={photoUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-pp-text">{p.display_name[0]?.toUpperCase()}</span>
                 )}
@@ -54,6 +61,9 @@ export default function PlayerList({ players, currentPlayerId, currentTurnPlayer
               )}
               {!isActive && isNext && (
                 <span className="mt-1 text-[10px] font-semibold text-pp-text">Next</span>
+              )}
+              {isInactive && (
+                <span className="mt-1 text-[10px] text-pp-text-muted">Left</span>
               )}
               {/* Kick button */}
               {onKick && !isMe && (

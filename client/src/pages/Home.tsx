@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { usePlayer } from '../lib/PlayerContext';
+import { resolvePhotoUrl } from '../lib/photo';
 import { Icon } from '../components/Icon';
 import { RulesModal } from '../components/RulesModal';
 import logoImg from '../assets/logo.png';
@@ -8,6 +9,7 @@ import logoImg from '../assets/logo.png';
 export default function Home() {
   const { player } = usePlayer();
   const [showRules, setShowRules] = useState(false);
+  const resolvedPhotoUrl = resolvePhotoUrl(player.photo_url);
 
   return (
     <div className="min-h-screen pp-shell flex flex-col" id="home-page">
@@ -27,8 +29,8 @@ export default function Home() {
           aria-label="Open profile"
           className="w-10 h-10 rounded-full bg-pp-surface/70 border border-pp-purple/30 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pp-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-pp-bg"
         >
-          {player.photo_url ? (
-            <img src={player.photo_url} alt="" className="w-full h-full object-cover" />
+          {resolvedPhotoUrl ? (
+            <img src={resolvedPhotoUrl} alt="" className="w-full h-full object-cover" />
           ) : (
             <span className="text-pp-text-muted text-sm">
               {player.display_name ? player.display_name[0].toUpperCase() : '?'}

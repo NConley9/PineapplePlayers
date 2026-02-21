@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePlayer } from '../lib/PlayerContext';
 import { api } from '../lib/api';
 import { RulesModal } from '../components/RulesModal';
+import { resolvePhotoUrl } from '../lib/photo';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function Profile() {
   const [saved, setSaved] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const resolvedPhotoPreview = resolvePhotoUrl(photoPreview);
 
   useEffect(() => {
     if (player.player_id) {
@@ -72,8 +74,8 @@ export default function Profile() {
             onClick={() => fileRef.current?.click()}
             className="w-24 h-24 rounded-full bg-pp-surface border-2 border-pp-purple/30 flex items-center justify-center cursor-pointer overflow-hidden hover:border-pp-purple transition-colors"
           >
-            {photoPreview ? (
-              <img src={photoPreview} alt="" className="w-full h-full object-cover" />
+            {resolvedPhotoPreview ? (
+              <img src={resolvedPhotoPreview} alt="" className="w-full h-full object-cover" />
             ) : (
               <span className="text-pp-text-muted text-3xl">📷</span>
             )}

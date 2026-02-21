@@ -1,8 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSocket } from '../lib/socket';
 import { usePlayer } from '../lib/PlayerContext';
 import { useGame } from '../lib/GameContext';
+import { api } from '../lib/api';
 import PlayerList from '../components/PlayerList';
 import CardDisplay from '../components/CardDisplay';
 import KickVoteModal from '../components/KickVoteModal';
@@ -18,14 +19,28 @@ export default function GameRoom() {
   const [showKickVote, setShowKickVote] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [passNotice, setPassNotice] = useState<string | null>(null);
+  const hasJoinedRef = useRef(false);
 
   const isMyTurn = game.current_turn_player_id === player.player_id;
   const isHost = game.host_player_id === player.player_id;
   const activePlayerCount = game.players.filter((p: any) => p.is_active && !p.is_kicked).length;
 
-  // Connect socket and join room
+  // Restore room info on reload
   useEffect(() => {
-    if (!roomId) return;
+    if (!roomId || game.room_code) return;
+    api.getRoom(roomId)
+      .then((room) => {
+        if (room?.room_code) {
+          setGame({ room_id: room.room_id, room_code: room.room_code });
+        }
+      })
+      .catch(() => {});
+  }, [roomId, game.room_code, setGame]);
+
+  // Connect socket and join room once room_code is available
+  useEffect(() => {
+    if (!roomId || !game.room_code) return;
+    if (hasJoinedRef.current) return;
 
     if (!socket.connected) socket.connect();
 
@@ -35,7 +50,13 @@ export default function GameRoom() {
       display_name: player.display_name,
       photo_url: player.photo_url || undefined,
     });
-  }, [roomId]);
+
+    hasJoinedRef.current = true;
+
+    return () => {
+      hasJoinedRef.current = false;
+    };
+  }, [roomId, game.room_code, player.player_id, player.display_name, player.photo_url, socket]);
 
   // Socket event handlers
   useEffect(() => {
@@ -223,7 +244,7 @@ export default function GameRoom() {
   }
 
   return (
-    <div id="game-room-page" className="h-screen pp-shell flex flex-col overflow-hidden">
+    <div id="game-room-page" className="min-h-screen pp-shell flex flex-col overflow-hidden">
       {/* Header */}
       <header id="game-header" className="mx-4 mt-4 rounded-2xl px-4 py-3 border border-pp-purple/20 bg-pp-surface/40 backdrop-blur flex items-center justify-between overflow-visible">
         <div className="flex items-center gap-2">
@@ -239,6 +260,14 @@ export default function GameRoom() {
           </button>
         </div>
         <div className="flex items-center gap-4">
+          <button
+            id="btn-log"
+            onClick={() => navigate(`/history/${roomId}`)}
+            className="text-sm text-pp-text-muted hover:text-pp-text transition-colors underline"
+            aria-label="Show game log"
+          >
+            Log
+          </button>
           <button id="btn-rules" onClick={() => setShowRules(true)} className="text-sm text-pp-text-muted hover:text-pp-text transition-colors underline" aria-label="Show rules">Rules</button>
           <button id="btn-leave" onClick={handleLeave} className="text-sm text-pp-red hover:text-pp-red-dark transition-colors" aria-label="Leave room">
             Leave
@@ -253,7 +282,7 @@ export default function GameRoom() {
       )}
 
       {/* Main Content */}
-      <main id="main-game-content" className="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 overflow-y-auto">
+      <main id="main-game-content" className="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 pb-24 overflow-y-auto">
         {/* LOBBY */}
         {game.status === 'lobby' && (
           <div id="lobby-panel" className="w-full max-w-md space-y-6 text-center pp-panel">
@@ -368,13 +397,15 @@ export default function GameRoom() {
       </main>
 
       {/* Player bar */}
-      <PlayerList
-        players={game.players.filter((p: any) => p.is_active && !p.is_kicked)}
-        currentPlayerId={player.player_id}
-        currentTurnPlayerId={game.current_turn_player_id}
-        turnOrder={game.turn_order}
-        onKick={game.status === 'in_progress' ? handleKick : undefined}
-      />
+      <div className="fixed bottom-0 left-0 right-0 z-20">
+        <PlayerList
+          players={game.players.filter((p: any) => !p.is_kicked)}
+          currentPlayerId={player.player_id}
+          currentTurnPlayerId={game.current_turn_player_id}
+          turnOrder={game.turn_order}
+          onKick={game.status === 'in_progress' ? handleKick : undefined}
+        />
+      </div>
 
       {/* Kick Vote Modal */}
       {showKickVote && game.active_kick_vote && game.active_kick_vote.target_player_id !== player.player_id && (

@@ -40,16 +40,42 @@ const initialGameState: GameState = {
   turn_log: [],
 };
 
+const STORAGE_KEY = 'pp_room';
+
+function loadRoomState(): Partial<GameState> {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {
+    /* ignore */
+  }
+  return {};
+}
+
+function saveRoomState(room: Partial<GameState>) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(room));
+}
+
 const GameContext = createContext<GameContextType>(null!);
 
 export function GameProvider({ children }: { children: ReactNode }) {
-  const [game, setGameState] = useState<GameState>(initialGameState);
+  const [game, setGameState] = useState<GameState>(() => ({
+    ...initialGameState,
+    ...loadRoomState(),
+  }));
 
   const setGame = (updates: Partial<GameState>) => {
-    setGameState(prev => ({ ...prev, ...updates }));
+    setGameState(prev => {
+      const next = { ...prev, ...updates };
+      saveRoomState({ room_id: next.room_id, room_code: next.room_code });
+      return next;
+    });
   };
 
-  const resetGame = () => setGameState(initialGameState);
+  const resetGame = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setGameState(initialGameState);
+  };
 
   return (
     <GameContext.Provider value={{ game, setGame, resetGame }}>

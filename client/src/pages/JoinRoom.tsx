@@ -5,6 +5,7 @@ import { useGame } from '../lib/GameContext';
 import { Icon } from '../components/Icon';
 import { RulesModal } from '../components/RulesModal';
 import { api } from '../lib/api';
+import { resolvePhotoUrl } from '../lib/photo';
 
 export default function JoinRoom() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ export default function JoinRoom() {
   const [error, setError] = useState('');
   const [showRules, setShowRules] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const resolvedPhotoPreview = resolvePhotoUrl(photoPreview);
 
   const handlePhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -110,8 +112,8 @@ export default function JoinRoom() {
               onClick={() => fileRef.current?.click()}
               className="w-16 h-16 rounded-full bg-pp-surface border border-pp-purple/30 flex items-center justify-center cursor-pointer overflow-hidden hover:border-pp-purple transition-colors"
             >
-              {photoPreview ? (
-                <img src={photoPreview} alt="" className="w-full h-full object-cover" />
+              {resolvedPhotoPreview ? (
+                <img src={resolvedPhotoPreview} alt="" className="w-full h-full object-cover" />
               ) : (
                 <Icon name="card" size="md" className="text-pp-text-muted" />
               )}
