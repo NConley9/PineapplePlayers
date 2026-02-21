@@ -27,27 +27,32 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
           <section>
             <h3 className="font-bold text-pp-text mb-2">🎮 Basic Rules</h3>
             <ul className="list-disc list-inside space-y-1">
-              <li>Draw a card and complete the challenge</li>
-              <li>Choose "✓ Complete" if you did it</li>
-              <li>Choose "Pass" to avoid the challenge</li>
+              <li>On your turn, draw 2 cards and pick 1 to play.</li>
+              <li>The unpicked card is shuffled back into the deck.</li>
+              <li>Hit <strong>Completed</strong> if you do it, or <strong>Pass</strong> if you skip it.</li>
             </ul>
           </section>
 
           <section>
             <h3 className="font-bold text-pp-text mb-2">👥 "Another Player"</h3>
-            <p>Must be a different player than last time. Group decides if significant others can be chosen.</p>
+            <p>Pick any player you want, but not the same one you picked last time. The group decides if significant others can be picked.</p>
+            <p className="mt-2">If that player refuses, they take their pass punishment.</p>
           </section>
 
           <section>
             <h3 className="font-bold text-pp-text mb-2">🍷 Pass Punishment</h3>
-            <p className="mb-2">Before the game starts, each player's partner (or the group) sets their "pass punishment."</p>
-            <p className="text-xs">Common choices: drink, remove clothing, etc.</p>
-            <p className="mt-2">If you <strong>Pass a challenge</strong>, do your punishment instead.</p>
+            <p className="mb-2">Before the game starts, set punishments:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Each player’s significant other sets that player’s punishment, or</li>
+              <li>The group sets one punishment for everyone.</li>
+            </ul>
+            <p className="mt-2 text-xs">Common picks: drink, remove clothing, or any agreed penalty.</p>
+            <p className="mt-2">If you pass, you do your pass punishment.</p>
           </section>
 
           <section>
             <h3 className="font-bold text-pp-text mb-2">❌ Losing a Challenge</h3>
-            <p>If you lose a challenge, you pay your "pass punishment" penalty.</p>
+            <p>If you lose a challenge, you also do your pass punishment.</p>
           </section>
 
           <section>

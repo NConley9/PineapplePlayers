@@ -290,6 +290,9 @@ export default function GameRoom() {
             <p className="text-pp-text-muted">
               Share code <span className="font-mono font-bold text-pp-purple">{game.room_code}</span> with your friends
             </p>
+            <p className="text-xs text-pp-text-muted">
+              You can start with 1 player and pass one device around if you want to play locally.
+            </p>
 
             {isHost && (
               <button

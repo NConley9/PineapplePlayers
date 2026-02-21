@@ -42,7 +42,7 @@ export default function Home() {
       {/* Main Grid */}
       <main id="main-content" className="flex-1 flex flex-col items-center justify-center p-4 gap-4 sm:gap-6">
         {/* Full Logo */}
-        <div id="home-logo" className="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 pp-animate-float">
+        <div id="home-logo" className="w-40 h-40 sm:w-52 sm:h-52 lg:w-60 lg:h-60 pp-animate-float">
           <img src={logoImg} alt="" className="w-full h-full object-contain" />
         </div>
 
@@ -50,41 +50,41 @@ export default function Home() {
           <Link
             id="tile-join"
             to="/join"
-            className="aspect-square pp-tile pp-animate-rise flex flex-col items-center justify-center gap-2"
+            className="aspect-square pp-tile pp-animate-rise flex flex-col items-center justify-center gap-2 p-3"
             style={{ animationDelay: '0.05s' }}
           >
-            <Icon name="door" size="xl" ariaLabel="Join Room" />
-            <span className="font-bold text-pp-text text-xs sm:text-sm">Join Room</span>
+            <Icon name="users" size="xl" ariaLabel="Join Room" />
+            <span className="font-bold text-pp-text text-xs sm:text-sm text-center leading-tight">Join Room</span>
           </Link>
 
           <Link
             id="tile-create"
             to="/create"
-            className="aspect-square pp-tile pp-animate-rise flex flex-col items-center justify-center gap-2"
+            className="aspect-square pp-tile pp-animate-rise flex flex-col items-center justify-center gap-2 p-3"
             style={{ animationDelay: '0.1s' }}
           >
             <Icon name="plus" size="xl" ariaLabel="Create Game" />
-            <span className="font-bold text-pp-text text-xs sm:text-sm">Create Game</span>
+            <span className="font-bold text-pp-text text-xs sm:text-sm text-center leading-tight">Create Game</span>
           </Link>
 
           <Link
             id="tile-profile"
             to="/profile"
-            className="aspect-square pp-tile pp-animate-rise flex flex-col items-center justify-center gap-2"
+            className="aspect-square pp-tile pp-animate-rise flex flex-col items-center justify-center gap-2 p-3"
             style={{ animationDelay: '0.15s' }}
           >
             <Icon name="home" size="xl" ariaLabel="Profile" />
-            <span className="font-bold text-pp-text text-xs sm:text-sm">Profile</span>
+            <span className="font-bold text-pp-text text-xs sm:text-sm text-center leading-tight">Profile</span>
           </Link>
 
           <Link
             id="tile-suggest"
             to="/suggest"
-            className="aspect-square pp-tile pp-animate-rise flex flex-col items-center justify-center gap-2"
+            className="aspect-square pp-tile pp-animate-rise flex flex-col items-center justify-center gap-2 p-3"
             style={{ animationDelay: '0.2s' }}
           >
             <Icon name="card" size="xl" ariaLabel="Suggest a Card" />
-            <span className="font-bold text-pp-text text-xs sm:text-sm">Suggest a Card</span>
+            <span className="font-bold text-pp-text text-xs sm:text-sm text-center leading-tight px-1">Suggest a Card</span>
           </Link>
 
           <Link
