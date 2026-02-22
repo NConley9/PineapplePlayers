@@ -4,11 +4,8 @@ export function resolvePhotoUrl(url?: string | null): string | null {
   if (url.startsWith('data:') || url.startsWith('blob:')) return url;
 
   const base = import.meta.env.VITE_API_URL || '';
-  const host = typeof window !== 'undefined' ? window.location.hostname : '';
-  const isPineappleHost = host === 'pineappleplayers.com' || host === 'www.pineappleplayers.com';
 
   if (url.startsWith('/uploads/')) {
-    if (isPineappleHost) return url;
     if (base) return `${base}${url}`;
     return url;
   }
