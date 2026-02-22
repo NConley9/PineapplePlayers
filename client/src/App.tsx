@@ -13,6 +13,7 @@ import SuggestCard from './pages/SuggestCard';
 import GameDetail from './pages/GameDetail';
 import AdminAnalytics from './pages/AdminAnalytics';
 import AdminCards from './pages/AdminCards';
+import AdminProfilePhotos from './pages/AdminProfilePhotos';
 
 function AppContent() {
   const { ageVerified } = usePlayer();
@@ -32,6 +33,7 @@ function AppContent() {
       <Route path="/history/:roomId" element={<GameDetail />} />
       <Route path="/admin/analytics" element={<AdminGate><AdminAnalytics /></AdminGate>} />
       <Route path="/admin/cards" element={<AdminGate><AdminCards /></AdminGate>} />
+      <Route path="/admin/photos" element={<AdminGate><AdminProfilePhotos /></AdminGate>} />
     </Routes>
   );
 }

@@ -5,12 +5,18 @@ import type { Card, Expansion, RoomPlayer, TurnLog, RoomState, Room } from '@pin
 // ---- Helpers ----
 
 function generateRoomCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no ambiguous chars
-  let code = '';
-  for (let i = 0; i < 5; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
+  const firstWords = [
+    'SUNNY', 'SILLY', 'LUCKY', 'WILD', 'BOLD', 'COZY', 'HAPPY', 'SMOOTH', 'CHILL', 'SPICY',
+    'FRESH', 'JUICY', 'ZESTY', 'NOBLE', 'SWIFT', 'MELLOW', 'BREEZY', 'BRIGHT', 'CRISP', 'JOLLY',
+  ];
+  const secondWords = [
+    'PINEAPPLE', 'BANANA', 'MANGO', 'COCONUT', 'PARROT', 'OTTER', 'TIGER', 'WHALE', 'KOALA', 'PANTHER',
+    'RIVER', 'ISLAND', 'BREEZE', 'THUNDER', 'WAVE', 'SUNSET', 'CLOUD', 'FOREST', 'CANYON', 'MEADOW',
+  ];
+
+  const first = firstWords[Math.floor(Math.random() * firstWords.length)];
+  const second = secondWords[Math.floor(Math.random() * secondWords.length)];
+  return `${first}-${second}`;
 }
 
 function shuffle<T>(array: T[]): T[] {
@@ -569,6 +575,13 @@ export async function getGameDetail(roomId: string) {
 }
 
 export async function getAnalyticsSummary() {
+  const qualifiedRoomsCte = `
+    WITH qualified_rooms AS (
+      SELECT r.room_id
+      FROM rooms r
+      WHERE (SELECT COUNT(*) FROM turn_logs WHERE room_id = r.room_id) >= 3
+    )`;
+
   const summaryResult = await query(
     `SELECT
        COUNT(*) as total_games,
@@ -602,7 +615,8 @@ export async function getAnalyticsSummary() {
   );
 
   const cardPerformanceResult = await query(
-    `SELECT
+     `${qualifiedRoomsCte}
+      SELECT
        c.card_id,
        c.card_type,
        c.card_text,
@@ -613,9 +627,15 @@ export async function getAnalyticsSummary() {
      LEFT JOIN (
        SELECT card_id, COUNT(*) as offered_count
        FROM (
-         SELECT card_drawn_1 as card_id FROM turn_logs WHERE card_drawn_1 IS NOT NULL
+         SELECT card_drawn_1 as card_id
+         FROM turn_logs
+         WHERE card_drawn_1 IS NOT NULL
+           AND room_id IN (SELECT room_id FROM qualified_rooms)
          UNION ALL
-         SELECT card_drawn_2 as card_id FROM turn_logs WHERE card_drawn_2 IS NOT NULL
+         SELECT card_drawn_2 as card_id
+         FROM turn_logs
+         WHERE card_drawn_2 IS NOT NULL
+           AND room_id IN (SELECT room_id FROM qualified_rooms)
        ) offered_cards
        GROUP BY card_id
      ) offered ON offered.card_id = c.card_id
@@ -623,6 +643,7 @@ export async function getAnalyticsSummary() {
        SELECT card_selected as card_id, COUNT(*) as chosen_count
        FROM turn_logs
        WHERE card_selected IS NOT NULL
+         AND room_id IN (SELECT room_id FROM qualified_rooms)
        GROUP BY card_selected
      ) chosen ON chosen.card_id = c.card_id
      WHERE COALESCE(offered.offered_count, 0) > 0 OR COALESCE(chosen.chosen_count, 0) > 0
@@ -640,12 +661,13 @@ export async function getAnalyticsSummary() {
        (SELECT COUNT(*) FROM room_players rp WHERE rp.room_id = r.room_id) as player_count,
        (SELECT COUNT(*) FROM turn_logs tl WHERE tl.room_id = r.room_id) as turn_count
      FROM rooms r
-     WHERE EXISTS (SELECT 1 FROM turn_logs tl WHERE tl.room_id = r.room_id)
+     WHERE (SELECT COUNT(*) FROM turn_logs tl WHERE tl.room_id = r.room_id) >= 3
      ORDER BY r.created_at DESC`
   );
 
   const fullTurnsResult = await query(
-    `SELECT
+    `${qualifiedRoomsCte}
+     SELECT
        tl.room_id,
        tl.turn_number,
        tl.outcome,
@@ -657,6 +679,7 @@ export async function getAnalyticsSummary() {
      FROM turn_logs tl
      LEFT JOIN players p ON tl.player_id = p.player_id
      LEFT JOIN cards c ON tl.card_selected = c.card_id
+      WHERE tl.room_id IN (SELECT room_id FROM qualified_rooms)
      ORDER BY tl.room_id, tl.turn_number ASC`
   );
 

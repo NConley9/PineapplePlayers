@@ -84,10 +84,10 @@ export default function JoinRoom() {
           <input
             type="text"
             value={code}
-            onChange={e => setCode(e.target.value.toUpperCase())}
-            maxLength={6}
-            placeholder="Enter room code"
-            className="input-field text-center text-2xl tracking-widest font-bold uppercase"
+            onChange={e => setCode(e.target.value.toUpperCase().replace(/\s+/g, '-'))}
+            maxLength={24}
+            placeholder="e.g. SUNNY-PINEAPPLE"
+            className="input-field text-center text-lg sm:text-xl font-bold uppercase"
           />
         </div>
 
