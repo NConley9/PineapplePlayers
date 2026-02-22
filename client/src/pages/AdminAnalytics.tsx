@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { api } from '../lib/api';
+import { resolvePhotoUrl } from '../lib/photo';
 
 type Analytics = {
   total_games: number;
@@ -48,12 +49,20 @@ export default function AdminAnalytics() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [photosLoading, setPhotosLoading] = useState(true);
+  const [photosError, setPhotosError] = useState('');
+  const [profilePhotos, setProfilePhotos] = useState<{ photo_url: string; player_id: string; display_name: string; created_at: string }[]>([]);
 
   useEffect(() => {
     api.getAdminAnalytics()
       .then((data) => setAnalytics(data))
       .catch((err: any) => setError(err.message || 'Failed to load analytics'))
       .finally(() => setLoading(false));
+
+    api.getAdminProfilePhotos()
+      .then((data) => setProfilePhotos(data.photos || []))
+      .catch((err: any) => setPhotosError(err.message || 'Failed to load profile photos'))
+      .finally(() => setPhotosLoading(false));
   }, []);
 
   return (
@@ -85,6 +94,39 @@ export default function AdminAnalytics() {
 
         {!loading && !error && analytics && (
           <>
+            <div className="rounded-xl border border-pp-purple/20 bg-pp-surface/40 p-4 space-y-3">
+              <h2 className="text-sm font-bold text-pp-text">Profile Photo Browser</h2>
+              {photosLoading && (
+                <p className="text-sm text-pp-text-muted">Loading profile photos...</p>
+              )}
+              {!photosLoading && photosError && (
+                <p className="text-sm text-pp-red">{photosError}</p>
+              )}
+              {!photosLoading && !photosError && profilePhotos.length === 0 && (
+                <p className="text-sm text-pp-text-muted">No uploaded profile photos found.</p>
+              )}
+              {!photosLoading && !photosError && profilePhotos.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {profilePhotos.map((photo, idx) => {
+                    const photoUrl = resolvePhotoUrl(photo.photo_url);
+                    return (
+                      <div key={`${photo.player_id}-${photo.photo_url}-${idx}`} className="rounded-lg border border-pp-purple/10 bg-pp-surface/30 p-2">
+                        <div className="aspect-square rounded-md overflow-hidden bg-pp-bg-light/40 flex items-center justify-center">
+                          {photoUrl ? (
+                            <img src={photoUrl} alt={photo.display_name || 'Profile photo'} className="w-full h-full object-cover" loading="lazy" />
+                          ) : (
+                            <span className="text-xs text-pp-text-muted">No image</span>
+                          )}
+                        </div>
+                        <div className="mt-2 text-xs text-pp-text truncate">{photo.display_name || 'Unknown'}</div>
+                        <div className="text-[10px] text-pp-text-muted">{new Date(photo.created_at).toLocaleDateString()}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 gap-3">
               <div className="rounded-xl border border-pp-purple/20 bg-pp-surface/40 p-4">
                 <div className="text-xs text-pp-text-muted">Total Games</div>

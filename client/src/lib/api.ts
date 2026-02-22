@@ -44,6 +44,9 @@ export const api = {
   getAdminAnalytics: () =>
     request<any>('/admin/analytics'),
 
+  getAdminProfilePhotos: () =>
+    request<any>('/admin/profile-photos'),
+
   getAdminCards: (includeInactive = true) =>
     request<any>(`/admin/cards?include_inactive=${includeInactive ? 'true' : 'false'}`),
 

@@ -334,6 +334,38 @@ apiRouter.get('/admin/analytics', async (_req: Request, res: Response) => {
   }
 });
 
+// GET /api/admin/profile-photos - List uploaded profile photos
+apiRouter.get('/admin/profile-photos', async (_req: Request, res: Response) => {
+  try {
+    const result = await query(
+      `WITH all_photos AS (
+         SELECT player_id, display_name, photo_url, created_at
+         FROM players
+         WHERE photo_url IS NOT NULL AND photo_url <> ''
+         UNION ALL
+         SELECT player_id, display_name, photo_url, joined_at as created_at
+         FROM room_players
+         WHERE photo_url IS NOT NULL AND photo_url <> ''
+       )
+       SELECT DISTINCT ON (photo_url)
+         photo_url,
+         player_id,
+         display_name,
+         created_at
+       FROM all_photos
+       ORDER BY photo_url, created_at DESC`
+    );
+
+    const photos = result.rows.sort(
+      (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+    res.json({ photos });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to fetch profile photos' });
+  }
+});
+
 // GET /api/admin/cards - List all cards
 apiRouter.get('/admin/cards', async (req: Request, res: Response) => {
   try {
