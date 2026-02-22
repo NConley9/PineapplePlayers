@@ -18,6 +18,7 @@ import {
   updateExpansions,
   getCardById,
   createOrGetPlayer,
+  endRoomIfNoActivePlayers,
 } from '../game/logic';
 
 // Track socket → (room_id, player_id) mapping
@@ -26,6 +27,9 @@ const socketRoomMap = new Map<string, { room_id: string; player_id: string }>();
 const turnState = new Map<string, { card1: number; card2: number; selected?: number; outcome?: string }>();
 // Track kick vote timers
 const kickTimers = new Map<string, NodeJS.Timeout>();
+// Track room-empty end timers
+const roomEmptyTimers = new Map<string, NodeJS.Timeout>();
+const ROOM_EMPTY_GRACE_MS = 2 * 60 * 1000;
 
 export function registerSocketHandlers(
   io: Server<ClientToServerEvents, ServerToClientEvents>
@@ -49,6 +53,12 @@ export function registerSocketHandlers(
         if ('error' in result) {
           socket.emit('error', { message: result.error });
           return;
+        }
+
+        const existingRoomTimer = roomEmptyTimers.get(room.room_id);
+        if (existingRoomTimer) {
+          clearTimeout(existingRoomTimer);
+          roomEmptyTimers.delete(room.room_id);
         }
 
         // Join socket room
@@ -353,14 +363,30 @@ function handlePlayerLeave(
       const room = await getRoom(roomId);
       const wasCurrentTurn = room?.current_turn_player_id === playerId;
 
-      const { gameEnded } = await removePlayerFromRoom(roomId, playerId);
+      await removePlayerFromRoom(roomId, playerId);
 
       socket.leave(roomId);
       io.to(roomId).emit('player_left', { player_id: playerId });
 
-      if (gameEnded) {
-        io.to(roomId).emit('game_ended');
-        return;
+      const activePlayers = await getActivePlayers(roomId);
+      if (activePlayers.length === 0 && room?.status === 'in_progress') {
+        const existingTimer = roomEmptyTimers.get(roomId);
+        if (existingTimer) clearTimeout(existingTimer);
+
+        const timer = setTimeout(async () => {
+          try {
+            const ended = await endRoomIfNoActivePlayers(roomId);
+            if (ended) {
+              io.to(roomId).emit('game_ended');
+            }
+          } catch (err) {
+            console.error('room empty timeout error:', err);
+          } finally {
+            roomEmptyTimers.delete(roomId);
+          }
+        }, ROOM_EMPTY_GRACE_MS);
+
+        roomEmptyTimers.set(roomId, timer);
       }
 
       // If it was their turn, auto-advance

@@ -189,18 +189,20 @@ export async function removePlayerFromRoom(roomId: string, playerId: string): Pr
     );
   }
 
-  // Check if any active players remain
+  return { gameEnded: false };
+}
+
+export async function endRoomIfNoActivePlayers(roomId: string): Promise<boolean> {
   const active = await getActivePlayers(roomId);
-  const updatedRoom = await getRoom(roomId);
-  if (active.length === 0 && updatedRoom?.status === 'in_progress') {
+  const room = await getRoom(roomId);
+  if (active.length === 0 && room?.status === 'in_progress') {
     await query(
       "UPDATE rooms SET status = 'ended', ended_at = CURRENT_TIMESTAMP WHERE room_id = $1",
       [roomId]
     );
-    return { gameEnded: true };
+    return true;
   }
-
-  return { gameEnded: false };
+  return false;
 }
 
 // ---- Deck Management ----
@@ -601,8 +603,8 @@ export async function getAnalyticsSummary() {
 
   return {
     total_games: parseInt(summary.total_games, 10) || 0,
-    avg_turns: summary.avg_turns ? Number((summary.avg_turns as number).toFixed(2)) : 0,
-    avg_players: summary.avg_players ? Number((summary.avg_players as number).toFixed(2)) : 0,
+    avg_turns: summary.avg_turns != null ? Number(Number(summary.avg_turns).toFixed(2)) : 0,
+    avg_players: summary.avg_players != null ? Number(Number(summary.avg_players).toFixed(2)) : 0,
     by_expansion: expansionResult.rows,
   };
 }
