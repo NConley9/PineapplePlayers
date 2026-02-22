@@ -29,25 +29,15 @@ if (-not (Test-Path $serverDist)) {
     exit 1
 }
 
-Write-Host "`n[1/4] Testing SSH connection..." -ForegroundColor Yellow
-ssh -i $sshKey $sshHost "echo 'SSH connection successful!'" -ErrorAction Stop | Write-Host
-Write-Host "✓ SSH connection OK" -ForegroundColor Green
-
-Write-Host "`n[2/4] Creating remote directories..." -ForegroundColor Yellow
-ssh -i $sshKey $sshHost @"
-mkdir -p ~/pineapple-app/public_html
-mkdir -p ~/pineapple-app/backend
-echo '✓ Directories created'
-"@
-
-Write-Host "`n[3/4] Uploading frontend (React build)..." -ForegroundColor Yellow
+Write-Host "`n[1/2] Uploading frontend (React build)..." -ForegroundColor Yellow
 Write-Host "Source: $frontendDist" -ForegroundColor Gray
-Write-Host "Target: remote:~/pineapple-app/public_html" -ForegroundColor Gray
+Write-Host "Targets: remote:~/public_html/pineappleplayers.com and remote:~/public_html" -ForegroundColor Gray
 
-scp -r -i $sshKey "$frontendDist\*" "$sshHost`:~/pineapple-app/public_html/" 2>&1 | Select-Object -First 5
+scp -r -i $sshKey "$frontendDist\*" "$sshHost`:~/public_html/pineappleplayers.com/" 2>&1 | Select-Object -First 5
+scp -r -i $sshKey "$frontendDist\*" "$sshHost`:~/public_html/" 2>&1 | Select-Object -First 5
 Write-Host "✓ Frontend uploaded" -ForegroundColor Green
 
-Write-Host "`n[4/4] Uploading backend..." -ForegroundColor Yellow
+Write-Host "`n[2/2] Uploading backend..." -ForegroundColor Yellow
 Write-Host "Source: $serverDist, $serverSrc" -ForegroundColor Gray
 Write-Host "Target: remote:~/pineapple-app/backend/" -ForegroundColor Gray
 

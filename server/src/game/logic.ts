@@ -601,11 +601,128 @@ export async function getAnalyticsSummary() {
      ORDER BY turn_count DESC`
   );
 
+  const cardPerformanceResult = await query(
+    `SELECT
+       c.card_id,
+       c.card_type,
+       c.card_text,
+       c.expansion,
+       COALESCE(offered.offered_count, 0) as offered_count,
+       COALESCE(chosen.chosen_count, 0) as chosen_count
+     FROM cards c
+     LEFT JOIN (
+       SELECT card_id, COUNT(*) as offered_count
+       FROM (
+         SELECT card_drawn_1 as card_id FROM turn_logs WHERE card_drawn_1 IS NOT NULL
+         UNION ALL
+         SELECT card_drawn_2 as card_id FROM turn_logs WHERE card_drawn_2 IS NOT NULL
+       ) offered_cards
+       GROUP BY card_id
+     ) offered ON offered.card_id = c.card_id
+     LEFT JOIN (
+       SELECT card_selected as card_id, COUNT(*) as chosen_count
+       FROM turn_logs
+       WHERE card_selected IS NOT NULL
+       GROUP BY card_selected
+     ) chosen ON chosen.card_id = c.card_id
+     WHERE COALESCE(offered.offered_count, 0) > 0 OR COALESCE(chosen.chosen_count, 0) > 0
+     ORDER BY COALESCE(offered.offered_count, 0) DESC, COALESCE(chosen.chosen_count, 0) DESC, c.card_id ASC`
+  );
+
+  const gameRowsResult = await query(
+    `SELECT
+       r.room_id,
+       r.room_code,
+       r.status,
+       r.expansions,
+       r.created_at,
+       r.ended_at,
+       (SELECT COUNT(*) FROM room_players rp WHERE rp.room_id = r.room_id) as player_count,
+       (SELECT COUNT(*) FROM turn_logs tl WHERE tl.room_id = r.room_id) as turn_count
+     FROM rooms r
+     WHERE EXISTS (SELECT 1 FROM turn_logs tl WHERE tl.room_id = r.room_id)
+     ORDER BY r.created_at DESC`
+  );
+
+  const fullTurnsResult = await query(
+    `SELECT
+       tl.room_id,
+       tl.turn_number,
+       tl.outcome,
+       tl.created_at,
+       p.display_name as player_name,
+       c.card_type,
+       c.card_text,
+       c.expansion
+     FROM turn_logs tl
+     LEFT JOIN players p ON tl.player_id = p.player_id
+     LEFT JOIN cards c ON tl.card_selected = c.card_id
+     ORDER BY tl.room_id, tl.turn_number ASC`
+  );
+
+  const turnsByRoom = new Map<string, any[]>();
+  for (const turn of fullTurnsResult.rows) {
+    if (!turnsByRoom.has(turn.room_id)) {
+      turnsByRoom.set(turn.room_id, []);
+    }
+    turnsByRoom.get(turn.room_id)!.push(turn);
+  }
+
+  const expansionUsageCounts: Record<string, number> = { core: 0, vanilla: 0, pineapple: 0 };
+  const totalExpansionGames = gameRowsResult.rows.length;
+
+  const game_logs = gameRowsResult.rows.map((row: any) => {
+    const expansions: string[] = Array.isArray(row.expansions) ? row.expansions : JSON.parse(row.expansions || '[]');
+    for (const expansion of expansions) {
+      if (Object.prototype.hasOwnProperty.call(expansionUsageCounts, expansion)) {
+        expansionUsageCounts[expansion] += 1;
+      }
+    }
+
+    return {
+      room_id: row.room_id,
+      room_code: row.room_code,
+      status: row.status,
+      expansions,
+      created_at: row.created_at,
+      ended_at: row.ended_at,
+      player_count: parseInt(row.player_count, 10) || 0,
+      turn_count: parseInt(row.turn_count, 10) || 0,
+      turns: turnsByRoom.get(row.room_id) || [],
+    };
+  });
+
+  const expansion_usage = Object.entries(expansionUsageCounts)
+    .map(([expansion, gameCount]) => ({
+      expansion,
+      game_count: gameCount,
+      total_games: totalExpansionGames,
+      ratio: totalExpansionGames > 0 ? Number((gameCount / totalExpansionGames).toFixed(3)) : 0,
+    }))
+    .sort((a, b) => b.ratio - a.ratio);
+
+  const card_performance = cardPerformanceResult.rows.map((row: any) => {
+    const offeredCount = parseInt(row.offered_count, 10) || 0;
+    const chosenCount = parseInt(row.chosen_count, 10) || 0;
+    return {
+      card_id: row.card_id,
+      card_type: row.card_type,
+      card_text: row.card_text,
+      expansion: row.expansion,
+      offered_count: offeredCount,
+      chosen_count: chosenCount,
+      chosen_ratio: offeredCount > 0 ? Number((chosenCount / offeredCount).toFixed(3)) : 0,
+    };
+  });
+
   return {
     total_games: parseInt(summary.total_games, 10) || 0,
     avg_turns: summary.avg_turns != null ? Number(Number(summary.avg_turns).toFixed(2)) : 0,
     avg_players: summary.avg_players != null ? Number(Number(summary.avg_players).toFixed(2)) : 0,
     by_expansion: expansionResult.rows,
+    card_performance,
+    expansion_usage,
+    game_logs,
   };
 }
 

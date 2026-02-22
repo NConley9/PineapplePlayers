@@ -8,6 +8,39 @@ type Analytics = {
   avg_turns: number;
   avg_players: number;
   by_expansion: { expansion: string; turn_count: number }[];
+  card_performance: {
+    card_id: number;
+    card_type: string;
+    card_text: string;
+    expansion: string;
+    offered_count: number;
+    chosen_count: number;
+    chosen_ratio: number;
+  }[];
+  expansion_usage: {
+    expansion: string;
+    game_count: number;
+    total_games: number;
+    ratio: number;
+  }[];
+  game_logs: {
+    room_id: string;
+    room_code: string;
+    status: string;
+    expansions: string[];
+    created_at: string;
+    ended_at: string | null;
+    player_count: number;
+    turn_count: number;
+    turns: {
+      turn_number: number;
+      outcome: string;
+      player_name: string;
+      card_type: string;
+      card_text: string;
+      expansion: string;
+    }[];
+  }[];
 };
 
 export default function AdminAnalytics() {
@@ -25,7 +58,7 @@ export default function AdminAnalytics() {
 
   return (
     <div className="min-h-screen pp-shell p-6">
-      <div className="max-w-md mx-auto space-y-6 pp-panel">
+      <div className="max-w-5xl mx-auto space-y-6 pp-panel">
         <button onClick={() => navigate('/')} className="text-pp-text-muted hover:text-pp-text transition-colors">
           ← Back
         </button>
@@ -78,6 +111,84 @@ export default function AdminAnalytics() {
                       <span className="capitalize text-pp-text">{item.expansion}</span>
                       <span className="text-pp-text-muted">{item.turn_count} turns</span>
                     </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-pp-purple/20 bg-pp-surface/40 p-4">
+              <h2 className="text-sm font-bold text-pp-text mb-3">Expansion Usage by Game</h2>
+              {analytics.expansion_usage.length === 0 ? (
+                <p className="text-sm text-pp-text-muted">No expansion usage data yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {analytics.expansion_usage.map((item) => (
+                    <div key={item.expansion} className="flex items-center justify-between text-sm">
+                      <span className="capitalize text-pp-text">{item.expansion}</span>
+                      <span className="text-pp-text-muted">
+                        {item.game_count}/{item.total_games} ({(item.ratio * 100).toFixed(1)}%)
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-pp-orange/20 bg-pp-surface/40 p-4 space-y-3">
+              <h2 className="text-sm font-bold text-pp-text">Card Offer vs Chosen Ratio</h2>
+              {analytics.card_performance.length === 0 ? (
+                <p className="text-sm text-pp-text-muted">No card usage data yet.</p>
+              ) : (
+                <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+                  {analytics.card_performance.map((card) => (
+                    <div key={card.card_id} className="rounded-lg border border-pp-purple/10 bg-pp-surface/30 p-3">
+                      <div className="flex items-center justify-between gap-3 text-xs text-pp-text-muted mb-1">
+                        <span className="uppercase">{card.card_type}</span>
+                        <span className="capitalize">{card.expansion}</span>
+                      </div>
+                      <p className="text-sm text-pp-text line-clamp-2">{card.card_text}</p>
+                      <div className="mt-2 text-xs text-pp-text-muted">
+                        Offered: {card.offered_count} · Chosen: {card.chosen_count} · Ratio: {(card.chosen_ratio * 100).toFixed(1)}%
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-pp-red/20 bg-pp-surface/40 p-4 space-y-3">
+              <h2 className="text-sm font-bold text-pp-text">Full Game Logs</h2>
+              {analytics.game_logs.length === 0 ? (
+                <p className="text-sm text-pp-text-muted">No completed turns logged yet.</p>
+              ) : (
+                <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+                  {analytics.game_logs.map((game) => (
+                    <details key={game.room_id} className="rounded-lg border border-pp-purple/10 bg-pp-surface/30 p-3">
+                      <summary className="cursor-pointer list-none">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="font-mono font-bold text-pp-purple">{game.room_code}</div>
+                            <div className="text-xs text-pp-text-muted">
+                              {new Date(game.created_at).toLocaleString()} · {game.player_count} players · {game.turn_count} turns
+                            </div>
+                          </div>
+                          <div className="text-xs text-pp-text-muted capitalize">{game.status}</div>
+                        </div>
+                        <div className="text-xs text-pp-text-muted mt-1">Expansions: {game.expansions.join(', ')}</div>
+                      </summary>
+                      <div className="mt-3 space-y-2">
+                        {game.turns.map((turn, idx) => (
+                          <div key={`${game.room_id}-${idx}`} className="rounded-md border border-pp-purple/10 bg-pp-bg-light/40 p-2 text-xs">
+                            <div className="flex items-center justify-between text-pp-text-muted mb-1">
+                              <span>Turn {turn.turn_number} · {turn.player_name}</span>
+                              <span className="capitalize">{turn.outcome}</span>
+                            </div>
+                            <div className="text-pp-text">{turn.card_text}</div>
+                            <div className="text-pp-text-muted mt-1 uppercase">{turn.card_type} · {turn.expansion}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
                   ))}
                 </div>
               )}
