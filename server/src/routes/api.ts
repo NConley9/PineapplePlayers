@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import multer from 'multer';
+import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuid } from 'uuid';
+import { createClient } from '@supabase/supabase-js';
 import {
   createRoom,
   findRoomByCode,
@@ -25,16 +27,8 @@ export const apiRouter = Router();
 
 // ---- File Upload ----
 
-const storage = multer.diskStorage({
-  destination: path.join(__dirname, '..', '..', 'uploads'),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${uuid()}${ext}`);
-  },
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
   fileFilter: (_req, file, cb) => {
     const allowed = ['image/jpeg', 'image/png', 'image/webp'];
@@ -53,6 +47,65 @@ const csvUpload = multer({
 
 const VALID_CARD_TYPES = new Set(['truth', 'dare', 'challenge', 'group']);
 const VALID_EXPANSIONS = new Set(['core', 'vanilla', 'pineapple']);
+
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const SUPABASE_STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'profile-photos';
+
+const supabase = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  : null;
+
+const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
+
+function getFileExtension(file: Express.Multer.File): string {
+  const byMime: Record<string, string> = {
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/webp': '.webp',
+  };
+  const fromMime = byMime[file.mimetype];
+  if (fromMime) return fromMime;
+  const fromName = path.extname(file.originalname || '').toLowerCase();
+  return fromName || '.jpg';
+}
+
+async function uploadPhotoToSupabase(file: Express.Multer.File): Promise<string> {
+  if (!supabase) {
+    throw new Error('Supabase storage not configured');
+  }
+
+  const ext = getFileExtension(file);
+  const objectPath = `players/${new Date().toISOString().slice(0, 10)}/${uuid()}${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from(SUPABASE_STORAGE_BUCKET)
+    .upload(objectPath, file.buffer, {
+      contentType: file.mimetype,
+      upsert: false,
+      cacheControl: '31536000',
+    });
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+  const { data } = supabase.storage.from(SUPABASE_STORAGE_BUCKET).getPublicUrl(objectPath);
+  if (!data?.publicUrl) {
+    throw new Error('Failed to generate photo URL');
+  }
+
+  return data.publicUrl;
+}
+
+async function uploadPhotoToLocalDisk(file: Express.Multer.File): Promise<string> {
+  await fs.mkdir(uploadsDir, { recursive: true });
+  const ext = getFileExtension(file);
+  const filename = `${uuid()}${ext}`;
+  const destination = path.join(uploadsDir, filename);
+  await fs.writeFile(destination, file.buffer);
+  return `/uploads/${filename}`;
+}
 
 function parseCsvRows(input: string): string[][] {
   const rows: string[][] = [];
@@ -228,15 +281,21 @@ apiRouter.put('/rooms/:roomId/expansions', async (req: Request, res: Response) =
 });
 
 // POST /api/upload/photo - Upload a player photo
-apiRouter.post('/upload/photo', upload.single('photo'), (req: Request, res: Response) => {
+apiRouter.post('/upload/photo', upload.single('photo'), async (req: Request, res: Response) => {
   try {
     if (!req.file) {
       res.status(400).json({ error: 'No file uploaded or invalid file type' });
       return;
     }
-    const photoUrl = `/uploads/${req.file.filename}`;
+
+    // In production we prefer durable object storage; local disk fallback keeps dev flow simple.
+    const photoUrl = supabase
+      ? await uploadPhotoToSupabase(req.file)
+      : await uploadPhotoToLocalDisk(req.file);
+
     res.json({ photo_url: photoUrl });
   } catch (err: any) {
+    console.error('Photo upload failed:', err);
     res.status(500).json({ error: 'Upload failed' });
   }
 });

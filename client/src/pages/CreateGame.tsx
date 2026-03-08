@@ -2,7 +2,6 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlayer } from '../lib/PlayerContext';
 import { useGame } from '../lib/GameContext';
-import { Icon } from '../components/Icon';
 import { RulesModal } from '../components/RulesModal';
 import { api } from '../lib/api';
 import { resolvePhotoUrl } from '../lib/photo';
@@ -78,88 +77,106 @@ export default function CreateGame() {
   };
 
   return (
-    <div className="min-h-screen pp-shell p-6">
-      <div className="max-w-md mx-auto space-y-6 pp-panel">
-        <div className="flex items-center justify-between">
-          <button onClick={() => navigate('/')} className="text-pp-text-muted hover:text-pp-text transition-colors">
-            ← Back
-          </button>
-          <button onClick={() => setShowRules(true)} className="text-sm text-pp-text-muted hover:text-pp-text transition-colors underline" aria-label="Show rules">Rules</button>
-        </div>
+    <div className="min-h-screen pp-shell flex flex-col">
+      {/* Header */}
+      <header className="mx-3 mt-3 rounded-2xl px-4 py-3 border border-pp-cyan/15 bg-pp-bg-light/60 backdrop-blur-md flex items-center justify-between" style={{ position: 'relative', zIndex: 10 }}>
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 text-pp-text-muted hover:text-pp-cyan transition-colors font-bold uppercase tracking-wider"
+          style={{ fontSize: '0.65rem', fontFamily: 'var(--font-pp-display)' }}
+        >
+          ← Back
+        </button>
+        <button
+          onClick={() => setShowRules(true)}
+          className="text-xs text-pp-text-muted hover:text-pp-text transition-colors font-bold uppercase tracking-wider"
+        >
+          Rules
+        </button>
+      </header>
 
-        <h1 className="text-2xl font-bold text-pp-text pp-title">Create Game</h1>
+      <main className="flex-1 flex flex-col items-center justify-center p-4" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="w-full max-w-md space-y-5 pp-panel pp-animate-rise">
+        <h1
+          className="pp-title font-black"
+          style={{ fontFamily: 'var(--font-pp-display)', fontSize: '1.3rem', color: 'var(--color-pp-text)', lineHeight: 1.1 }}
+        >
+          CREATE<br /><span style={{ color: 'var(--color-pp-cyan)' }}>GAME</span>
+        </h1>
 
         {/* Name */}
         <div>
-          <label className="block text-sm text-pp-text-muted mb-2">Your Name</label>
+          <label className="block mb-2 font-bold uppercase tracking-widest" style={{ fontSize: '0.6rem', fontFamily: 'var(--font-pp-display)', color: 'var(--color-pp-text-muted)' }}>Your Name</label>
           <input
             type="text"
             value={name}
             onChange={e => setName(e.target.value)}
             maxLength={30}
-            placeholder="Enter your display name"
+            placeholder="Display name"
             className="input-field"
           />
         </div>
 
         {/* Photo */}
         <div>
-          <label className="block text-sm text-pp-text-muted mb-2">Photo (optional)</label>
+          <label className="block mb-2 font-bold uppercase tracking-widest" style={{ fontSize: '0.6rem', fontFamily: 'var(--font-pp-display)', color: 'var(--color-pp-text-muted)' }}>Photo (optional)</label>
           <div className="flex items-center gap-4">
             <div
               onClick={() => fileRef.current?.click()}
-              className="w-16 h-16 rounded-full bg-pp-surface border border-pp-purple/30 flex items-center justify-center cursor-pointer overflow-hidden hover:border-pp-purple transition-colors"
+              className="w-16 h-16 rounded-2xl bg-pp-surface border-2 border-pp-cyan/20 flex items-center justify-center cursor-pointer overflow-hidden hover:border-pp-cyan/60 transition-all"
             >
               {resolvedPhotoPreview ? (
                 <img src={resolvedPhotoPreview} alt="" className="w-full h-full object-cover" />
               ) : (
-                <Icon name="card" size="md" className="text-pp-text-muted" />
+                <span className="text-2xl">📷</span>
               )}
             </div>
             <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} className="hidden" />
-            <span className="text-sm text-pp-text-muted">Tap to take or upload a photo</span>
+            <span className="text-xs text-pp-text-muted">Tap to take or upload</span>
           </div>
         </div>
 
         {/* Expansions */}
         <div>
-          <label className="block text-sm text-pp-text-muted mb-2">Card Expansions</label>
+          <label className="block mb-2 font-bold uppercase tracking-widest" style={{ fontSize: '0.6rem', fontFamily: 'var(--font-pp-display)', color: 'var(--color-pp-text-muted)' }}>Card Expansions</label>
           <div className="space-y-2">
-            {EXPANSIONS.map(exp => (
-              <button
-                key={exp.key}
-                onClick={() => toggleExpansion(exp.key)}
-                disabled={exp.locked}
-                className={`w-full text-left p-4 rounded-xl border transition-colors ${
-                  selectedExpansions.includes(exp.key)
-                    ? 'bg-pp-purple/20 border-pp-purple'
-                    : 'bg-pp-surface/50 border-pp-surface hover:border-pp-purple/30'
-                } ${exp.locked ? 'opacity-70' : ''}`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-pp-text">{exp.label}</span>
-                  <span className={`w-5 h-5 rounded border flex items-center justify-center text-xs ${
-                    selectedExpansions.includes(exp.key)
-                      ? 'bg-pp-purple border-pp-purple text-white'
-                      : 'border-pp-text-muted/30'
-                  }`}>
-                    {selectedExpansions.includes(exp.key) && '✓'}
-                  </span>
-                </div>
-                <p className="text-sm text-pp-text-muted mt-1">{exp.description}</p>
-              </button>
-            ))}
+            {EXPANSIONS.map(exp => {
+              const isSelected = selectedExpansions.includes(exp.key);
+              return (
+                <button
+                  key={exp.key}
+                  onClick={() => toggleExpansion(exp.key)}
+                  disabled={exp.locked}
+                  className={`w-full text-left p-4 rounded-2xl border transition-all ${
+                    isSelected
+                      ? 'border-pp-cyan/60 bg-pp-cyan/10'
+                      : 'border-pp-surface-2 bg-pp-surface/40 hover:border-pp-cyan/30'
+                  } ${exp.locked ? 'opacity-60' : ''}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-pp-text text-sm">{exp.label}</span>
+                    <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center text-xs transition-all ${
+                      isSelected ? 'bg-pp-cyan border-pp-cyan' : 'border-pp-text-muted/30'
+                    }`}>
+                      {isSelected && <span className="text-pp-bg font-black text-xs">✓</span>}
+                    </div>
+                  </div>
+                  <p className="text-xs text-pp-text-muted mt-1">{exp.description}</p>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {error && (
-          <p className="text-pp-red text-sm text-center">{error}</p>
+          <p className="text-pp-dare text-sm text-center font-semibold">{error}</p>
         )}
 
-        <button onClick={handleSubmit} disabled={loading || !name.trim()} className="btn-primary w-full">
+        <button onClick={handleSubmit} disabled={loading || !name.trim()} className="btn-primary w-full py-4">
           {loading ? 'Creating...' : 'Create Game'}
         </button>
       </div>
+      </main>
 
       <RulesModal isOpen={showRules} onClose={() => setShowRules(false)} />
     </div>

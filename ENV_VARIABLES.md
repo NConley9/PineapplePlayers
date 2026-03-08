@@ -14,6 +14,11 @@ DATABASE_URL=postgresql://user:password@host:5432/pineapple
 
 # Application Environment  
 NODE_ENV=production
+
+# Durable photo storage (Supabase Storage)
+SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_STORAGE_BUCKET=profile-photos
 ```
 
 ### Where to set:
@@ -21,6 +26,12 @@ NODE_ENV=production
 2. Select `pineapple-api` service
 3. Click "Environment"
 4. Add variables listed above
+
+### Supabase storage notes
+
+- Create a bucket named `profile-photos` (or set `SUPABASE_STORAGE_BUCKET` to your bucket name).
+- For server-side uploads using `SUPABASE_SERVICE_ROLE_KEY`, keep this key secret in Render env vars.
+- Make the bucket public if you want direct public image URLs.
 
 ### DATABASE_URL Format
 

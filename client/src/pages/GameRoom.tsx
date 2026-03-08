@@ -233,11 +233,21 @@ export default function GameRoom() {
   if (game.status === 'ended') {
     return (
       <div id="game-ended-page" className="min-h-screen pp-shell flex items-center justify-center p-6">
-        <div id="game-over-panel" className="text-center space-y-6 max-w-sm pp-panel">
-          <Icon name="pineapple" size="xl" className="pp-animate-float" ariaLabel="Pineapple Players" />
-          <h1 id="game-over-title" className="text-2xl font-bold text-pp-text pp-title">Game Over!</h1>
-          <p className="text-pp-text-muted">Thanks for playing Pineapple Players.</p>
-          <button id="btn-back-to-home" onClick={() => navigate('/')} className="btn-primary w-full">Back to Home</button>
+        <div id="game-over-panel" className="text-center space-y-8 max-w-sm pp-panel pp-animate-fade-scale">
+          <div className="pp-animate-float text-6xl">🍍</div>
+          <div className="space-y-2">
+            <h1
+              id="game-over-title"
+              className="pp-title pp-text-shimmer text-3xl font-black"
+              style={{ fontFamily: 'var(--font-pp-display)' }}
+            >
+              GAME OVER!
+            </h1>
+            <p className="text-pp-text-muted text-sm">Thanks for playing Pineapple Players.</p>
+          </div>
+          <button id="btn-back-to-home" onClick={() => navigate('/')} className="btn-primary w-full">
+            Back to Home
+          </button>
         </div>
       </div>
     );
@@ -246,60 +256,100 @@ export default function GameRoom() {
   return (
     <div id="game-room-page" className="min-h-screen pp-shell flex flex-col overflow-hidden">
       {/* Header */}
-      <header id="game-header" className="mx-4 mt-4 rounded-2xl px-4 py-3 border border-pp-purple/20 bg-pp-surface/40 backdrop-blur flex items-center justify-between overflow-visible">
-        <div className="flex items-center gap-2">
+      <header
+        id="game-header"
+        className="mx-3 mt-3 rounded-2xl px-4 py-3 border border-pp-cyan/15
+          bg-pp-bg-light/60 backdrop-blur-md flex items-center justify-between"
+        style={{ position: 'relative', zIndex: 10 }}
+      >
+        <div className="flex items-center gap-3">
           <Icon name="pineapple" size="md" />
-          <span className="text-sm text-pp-text-muted">Room:</span>
-          <button
-            id="room-code-btn"
-            onClick={copyRoomCode}
-            aria-label="Copy room code"
-            className="font-mono font-bold text-pp-text tracking-widest hover:text-pp-purple transition-colors"
-          >
-            {game.room_code}
-          </button>
+          <div className="flex flex-col leading-none">
+            <span className="text-pp-text-muted text-xs uppercase tracking-wider">Room</span>
+            <button
+              id="room-code-btn"
+              onClick={copyRoomCode}
+              aria-label="Copy room code"
+              className="font-black tracking-widest text-pp-cyan hover:text-pp-gold transition-colors"
+              style={{ fontFamily: 'var(--font-pp-display)', fontSize: '0.75rem' }}
+            >
+              {game.room_code}
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <button
             id="btn-log"
             onClick={() => navigate(`/history/${roomId}`)}
-            className="text-sm text-pp-text-muted hover:text-pp-text transition-colors underline"
-            aria-label="Show game log"
+            className="text-xs text-pp-text-muted hover:text-pp-text transition-colors font-bold uppercase tracking-wider"
           >
             Log
           </button>
-          <button id="btn-rules" onClick={() => setShowRules(true)} className="text-sm text-pp-text-muted hover:text-pp-text transition-colors underline" aria-label="Show rules">Rules</button>
-          <button id="btn-leave" onClick={handleLeave} className="text-sm text-pp-red hover:text-pp-red-dark transition-colors" aria-label="Leave room">
+          <button
+            id="btn-rules"
+            onClick={() => setShowRules(true)}
+            className="text-xs text-pp-text-muted hover:text-pp-text transition-colors font-bold uppercase tracking-wider"
+          >
+            Rules
+          </button>
+          <button
+            id="btn-leave"
+            onClick={handleLeave}
+            className="text-xs text-pp-dare hover:text-pp-dare-dark transition-colors font-bold uppercase tracking-wider"
+          >
             Leave
           </button>
         </div>
       </header>
 
+      {/* Pass notice */}
       {passNotice && (
-        <div className="mx-4 mt-3 rounded-xl border border-pp-yellow/40 bg-pp-yellow/10 px-4 py-2 text-sm text-pp-text">
-          {passNotice}
+        <div
+          className="mx-3 mt-2 rounded-2xl border border-pp-gold/30 px-4 py-2.5 text-sm font-semibold text-pp-gold pp-animate-slide-left"
+          style={{ background: 'rgba(255,214,10,0.08)', zIndex: 10, position: 'relative' }}
+        >
+          ⏭ {passNotice}
         </div>
       )}
 
       {/* Main Content */}
-      <main id="main-game-content" className="flex-1 flex flex-col items-center justify-center p-3 sm:p-4 lg:p-6 pb-24 overflow-y-auto">
+      <main
+        id="main-game-content"
+        className="game-room-main flex-1 flex flex-col items-center justify-center p-3 sm:p-4 pb-28 overflow-y-auto"
+        style={{ position: 'relative', zIndex: 1 }}
+      >
         {/* LOBBY */}
         {game.status === 'lobby' && (
-          <div id="lobby-panel" className="w-full max-w-md space-y-6 text-center pp-panel">
-            <h2 className="text-xl font-bold text-pp-text pp-title">Waiting for players...</h2>
-            <p className="text-pp-text-muted">
-              Share code <span className="font-mono font-bold text-pp-purple">{game.room_code}</span> with your friends
-            </p>
-            <p className="text-xs text-pp-text-muted">
-              You can start with 1 player and pass one device around if you want to play locally.
-            </p>
+          <div id="lobby-panel" className="w-full max-w-md space-y-6 text-center pp-panel pp-animate-rise">
+            <div className="space-y-3">
+              <div className="text-5xl pp-animate-float">🍍</div>
+              <h2
+                className="pp-title font-black"
+                style={{ fontFamily: 'var(--font-pp-display)', fontSize: '1.1rem', color: 'var(--color-pp-text)' }}
+              >
+                WAITING FOR PLAYERS
+              </h2>
+              <p className="text-pp-text-muted text-sm">
+                Share{' '}
+                <span
+                  className="font-black"
+                  style={{ color: 'var(--color-pp-cyan)', fontFamily: 'var(--font-pp-display)', fontSize: '0.8rem' }}
+                >
+                  {game.room_code}
+                </span>{' '}
+                with your crew
+              </p>
+              <p className="text-xs text-pp-text-muted opacity-60">
+                Can play with 1 device passed around
+              </p>
+            </div>
 
             {isHost && (
               <button
                 id="btn-start-game"
                 onClick={handleStartGame}
                 disabled={activePlayerCount < 1}
-                className="btn-primary w-full"
+                className="btn-primary w-full text-base py-4"
               >
                 Start Game
               </button>
@@ -309,91 +359,155 @@ export default function GameRoom() {
 
         {/* IN GAME */}
         {game.status === 'in_progress' && (
-          <div id="game-container" className="w-full flex justify-center px-2 sm:px-3 lg:px-4">
-            <div className="w-full max-w-6xl space-y-3 sm:space-y-4 lg:space-y-6">
-              {/* Mobile: Stack layout | Tablet+: 2-column | Large screens: 3-column layout */}
-              <div id="game-grid" className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-                {/* Left panel - turn info */}
-                <div id="turn-info-panel" className="lg:col-span-1 pp-panel py-2 sm:py-3 lg:py-4">
-                  <div className="text-center space-y-4">
-                    <p className="text-sm text-pp-text-muted font-mono">Turn {game.turn_number}</p>
-                    <h2 id="turn-indicator" className="text-xl font-bold text-pp-text pp-title">
-                      {isMyTurn ? "Your Turn" : `${currentPlayer?.display_name || 'Unknown'}'s Turn`}
-                    </h2>
-                    {isMyTurn && <Icon name="play" size="lg" className="text-pp-gold mx-auto pp-animate-float" />}
-                  </div>
-                </div>
+          <div id="game-container" className="w-full max-w-2xl space-y-4">
 
-                {/* Right panel - card play area */}
-                <div id="card-play-panel" className="lg:col-span-2 pp-panel py-2 sm:py-3 lg:py-4">
-                  {/* MY TURN */}
-                  {isMyTurn && (
-                    <div id="my-turn-section" className="space-y-4 lg:space-y-6">
-                      {/* Draw phase */}
-                      {game.drawn_cards.length === 0 && !game.selected_card && (
-                        <button onClick={handleDrawCards} className="btn-primary w-full text-lg py-4">
-                          Draw Cards
-                        </button>
-                      )}
-
-                      {/* Card selection phase */}
-                      {game.drawn_cards.length === 2 && !game.selected_card && (
-                        <div className="space-y-3 sm:space-y-3 lg:space-y-4">
-                          <p className="text-center text-pp-text-muted text-sm">Choose a card to play:</p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
-                            {game.drawn_cards.map((card: any, idx: number) => (
-                              <CardDisplay 
-                                key={card.card_id} 
-                                card={card} 
-                                onClick={() => handleSelectCard(card.card_id)}
-                                drawDelay={idx}
-                                glowing={false}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Play phase - card selected, waiting for action */}
-                      {game.selected_card && !game.turn_outcome && (
-                        <div className="space-y-6 pp-animate-fade-scale">
-                          <CardDisplay card={game.selected_card} large glowing />
-                          <div className="grid grid-cols-2 gap-4">
-                            <button onClick={() => handleCompleteTurn('completed')} className="btn-success flex items-center justify-center gap-2">
-                              <Icon name="check" size="sm" />
-                              Completed
-                            </button>
-                            <button onClick={() => handleCompleteTurn('passed')} className="btn-muted flex items-center justify-center gap-2">
-                              <Icon name="skip" size="sm" />
-                              Pass
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* End turn phase */}
-                      {game.turn_outcome && (
-                        <div className="space-y-6 text-center pp-animate-fade-scale">
-                          <p className="text-pp-text text-lg font-bold">
-                            {game.turn_outcome === 'completed' ? '🎉 Nice work!' : '⏭️ Passed'}
-                          </p>
-                          <button onClick={handleEndTurn} className="btn-primary w-full">
-                            End Turn
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* WAITING (not my turn) */}
-                  {!isMyTurn && game.selected_card && (
-                    <div className="space-y-4">
-                      <p className="text-center text-sm text-pp-text-muted">Currently playing:</p>
-                      <CardDisplay card={game.selected_card} large />
-                    </div>
-                  )}
-                </div>
+            {/* Turn banner */}
+            <div
+              id="turn-banner"
+              className="pp-panel py-3 px-5 flex items-center justify-between pp-animate-slide-left"
+            >
+              <div>
+                <p
+                  className="text-pp-text-muted uppercase tracking-widest"
+                  style={{ fontSize: '0.6rem', fontFamily: 'var(--font-pp-display)' }}
+                >
+                  Turn {game.turn_number}
+                </p>
+                <h2
+                  id="turn-indicator"
+                  className="font-black leading-tight"
+                  style={{
+                    fontFamily: 'var(--font-pp-display)',
+                    fontSize: '0.95rem',
+                    color: isMyTurn ? 'var(--color-pp-gold)' : 'var(--color-pp-text)',
+                  }}
+                >
+                  {isMyTurn ? '⚡ YOUR TURN' : `${currentPlayer?.display_name?.toUpperCase() || 'UNKNOWN'}`}
+                </h2>
               </div>
+              {isMyTurn && (
+                <div
+                  className="pp-animate-pulse-ring w-10 h-10 rounded-2xl flex items-center justify-center"
+                  style={{ background: 'rgba(255,214,10,0.15)', border: '1px solid rgba(255,214,10,0.4)' }}
+                >
+                  <span className="text-xl">⚡</span>
+                </div>
+              )}
+            </div>
+
+            {/* Card play area */}
+            <div id="card-play-area">
+              {/* MY TURN */}
+              {isMyTurn && (
+                <div id="my-turn-section" className="space-y-4">
+                  {/* Draw phase */}
+                  {game.drawn_cards.length === 0 && !game.selected_card && (
+                    <button
+                      onClick={handleDrawCards}
+                      className="btn-primary w-full text-base py-5 pp-animate-rise"
+                      style={{ fontSize: '0.85rem' }}
+                    >
+                      🃏 Draw Cards
+                    </button>
+                  )}
+
+                  {/* Card selection phase */}
+                  {game.drawn_cards.length === 2 && !game.selected_card && (
+                    <div className="space-y-3">
+                      <p
+                        className="text-center font-bold uppercase tracking-widest"
+                        style={{ color: 'var(--color-pp-text-muted)', fontSize: '0.65rem', fontFamily: 'var(--font-pp-display)' }}
+                      >
+                        Choose a card
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        {game.drawn_cards.map((card: any, idx: number) => (
+                          <CardDisplay
+                            key={card.card_id}
+                            card={card}
+                            onClick={() => handleSelectCard(card.card_id)}
+                            drawDelay={idx}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Play phase */}
+                  {game.selected_card && !game.turn_outcome && (
+                    <div className="space-y-5 pp-animate-fade-scale">
+                      <CardDisplay card={game.selected_card} large glowing />
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => handleCompleteTurn('completed')}
+                          className="btn-success flex items-center justify-center gap-2 py-4"
+                        >
+                          <Icon name="check" size="sm" />
+                          <span className="font-black uppercase tracking-wide" style={{ fontSize: '0.7rem', fontFamily: 'var(--font-pp-display)' }}>Done</span>
+                        </button>
+                        <button
+                          onClick={() => handleCompleteTurn('passed')}
+                          className="btn-muted flex items-center justify-center gap-2 py-4"
+                        >
+                          <Icon name="skip" size="sm" />
+                          <span className="font-black uppercase tracking-wide" style={{ fontSize: '0.7rem', fontFamily: 'var(--font-pp-display)' }}>Pass</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* End turn phase */}
+                  {game.turn_outcome && (
+                    <div className="space-y-5 text-center pp-animate-fade-scale">
+                      <div className="pp-panel py-6">
+                        <p className="text-4xl mb-3">
+                          {game.turn_outcome === 'completed' ? '🎉' : '⏭️'}
+                        </p>
+                        <p
+                          className="font-black"
+                          style={{
+                            fontFamily: 'var(--font-pp-display)',
+                            fontSize: '0.85rem',
+                            color: game.turn_outcome === 'completed' ? 'var(--color-pp-cyan)' : 'var(--color-pp-text-muted)',
+                          }}
+                        >
+                          {game.turn_outcome === 'completed' ? 'NAILED IT!' : 'PASSED'}
+                        </p>
+                      </div>
+                      <button onClick={handleEndTurn} className="btn-primary w-full py-4">
+                        End Turn
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* WAITING: not my turn */}
+              {!isMyTurn && (
+                <div className="space-y-4 pp-animate-fade-scale">
+                  {game.selected_card ? (
+                    <>
+                      <p
+                        className="text-center font-bold uppercase tracking-widest"
+                        style={{ color: 'var(--color-pp-text-muted)', fontSize: '0.6rem', fontFamily: 'var(--font-pp-display)' }}
+                      >
+                        Currently playing
+                      </p>
+                      <CardDisplay card={game.selected_card} large />
+                    </>
+                  ) : (
+                    <div className="pp-panel text-center py-10 space-y-3">
+                      <div className="text-4xl pp-animate-float">⏳</div>
+                      <p
+                        className="font-black"
+                        style={{ fontFamily: 'var(--font-pp-display)', fontSize: '0.75rem', color: 'var(--color-pp-text-muted)' }}
+                      >
+                        WAITING FOR {currentPlayer?.display_name?.toUpperCase() || 'PLAYER'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -410,7 +524,6 @@ export default function GameRoom() {
         />
       </div>
 
-      {/* Kick Vote Modal */}
       {showKickVote && game.active_kick_vote && game.active_kick_vote.target_player_id !== player.player_id && (
         <KickVoteModal
           vote={game.active_kick_vote}
@@ -420,7 +533,6 @@ export default function GameRoom() {
         />
       )}
 
-      {/* Rules Modal */}
       <RulesModal isOpen={showRules} onClose={() => setShowRules(false)} />
     </div>
   );
